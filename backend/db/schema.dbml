@@ -1,0 +1,65 @@
+Table Invites {
+  id integer [primary key]
+  email varchar
+  token varchar
+  status varchar
+  role varchar
+  invited_by integer
+  expires_at timestamp
+}
+
+Table auth_identities {
+  id integer [primary key]
+  user_id integer
+  provider varchar
+  provider_user_id varchar
+}
+
+Table Users {
+  id integer [primary key]
+  name varchar
+  email varchar
+  status varchar
+  role varchar
+  last_active timestamp
+}
+
+Table Business {
+  id integer [primary key]
+  name varchar
+  address varchar
+  phone varchar
+  location geography(Point, 4326)
+  category varchar
+  license_status varchar
+  license_number varchar
+  stage varchar
+  assigned_rep integer
+  last_activity_at timestamp
+}
+
+Table activity_log{
+  id integer [primary key]
+  user_id integer
+  business_id integer
+  activity_type varchar
+  note text
+  created_at timestamp
+}
+
+Table source_records {
+  id integer [primary key]
+  business_id integer
+  source varchar
+  source_record_id varchar
+  raw_name varchar
+  raw_address varchar
+  pulled_at timestamp
+}
+
+Ref: Business.assigned_rep > Users.id 
+Ref: source_records.business_id > Business.id
+Ref: activity_log.business_id > Business.id
+Ref: activity_log.user_id > Users.id
+Ref: Invites.invited_by > Users.id
+Ref: auth_identities.user_id > Users.id
