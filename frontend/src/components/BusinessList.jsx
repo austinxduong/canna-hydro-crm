@@ -68,10 +68,10 @@ if (error) {
                     <td>{businesses.address}</td>
                     <td>{businesses.category}</td>
                     <td>{businesses.license_status}</td>
-                    <td>
-                        <span className={getStageColor(businesses.stage)}>
+                    <td className="inline-flex items-center px-3 p-y rounded-full border border-emerald-500">
+                        
                         {businesses.stage}
-                        </span>
+                        
                     </td>
                     <td>{businesses.assigned_rep || 'Unassigned'}</td>
                     <td>{businesses.last_activity_at}</td>
