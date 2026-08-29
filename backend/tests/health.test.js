@@ -45,3 +45,14 @@ test('UPDATE by ID business route', async () => {
     expect(response.status).toBe(200)
     expect(response.body.name).toBe('Remy')
 })
+
+test('DLETE by ID business route', async () => {
+    const createResponse = await request(app)
+        .post('/businesses')
+        .send({name: 'Remy', address: '555 Sun River', category: 'Hydroponics'})
+    const id = createResponse.body[0].id
+    const response = await request(app)
+        .delete(`/businesses/${id}`)
+    expect(response.status).toBe(200)
+    expect(response.body).toHaveProperty('id', id)
+})

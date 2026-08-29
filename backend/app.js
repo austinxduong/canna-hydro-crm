@@ -68,4 +68,17 @@ app.patch('/businesses/:id', async (req, res) =>{
     }
 })
 
+app.delete('/businesses/:id', async (req, res) => {
+    try {
+        const result = await pool.query('DELETE FROM "Business" WHERE id = $1 RETURNING *', [req.params.id])
+        if (result.rows.length === 0) {
+            return res.status(404).json({message: "Item not found"})
+        }
+        res.status(200).json(result.rows[0])
+    } catch (error) {
+        res.status(500).send('Something went wrong')
+        console.log(error)
+    }
+})
+
 module.exports = app;
