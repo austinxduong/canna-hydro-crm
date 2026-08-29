@@ -4,6 +4,8 @@ import reactLogo from './assets/react.svg'
 import viteLogo from './assets/vite.svg'
 import './App.css'
 
+import BusinessList from './components/BusinessList'
+
 function App() {
   const [count, setCount] = useState(0)
 
@@ -20,7 +22,9 @@ function App() {
           <p>
             Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
           </p>
+
         </div>
+        <BusinessList />
         <button
           type="button"
           className="counter"
