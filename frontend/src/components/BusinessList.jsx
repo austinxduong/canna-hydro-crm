@@ -7,25 +7,36 @@ const [serverUrl, setServerUrl] = useState('https://canna-hydro-crm.onrender.com
 const [data, setData] = useState([])
 const [error, setError] = useState(null)
 
-    useEffect(() => {
-        async function startFetching() {
-            try {
-                const response = await fetch(serverUrl);
-                const json = await response.json();
-                setData(json);
-                console.log(json)
-            } catch (err) {
-                setError(err.message)
-            }
-        }
+useEffect(() => {
+    async function startFetching() {
+        try {
+            const response = await fetch(serverUrl);
+            const json = await response.json();
+            setData(json);
+            console.log(json)
 
-        startFetching();
-    }, [serverUrl])
+        } catch (err) {
+            setError(err.message)
+        }
+    }
+
+    startFetching();
+}, [serverUrl])
 
   return (
     <table>
         <thead>
-
+            <tr>
+            <th>id</th>
+            <th>Business</th>
+            <th>Address</th>
+            <th>Category</th>
+            <th>License</th>
+            <th>Stage</th>
+            <th>Rep</th>
+            <th>Last Activity</th>
+            
+            </tr>
         </thead>
         <tbody>
             {data.map((businesses) =>(
@@ -34,6 +45,10 @@ const [error, setError] = useState(null)
                     <td>{businesses.name}</td>
                     <td>{businesses.address}</td>
                     <td>{businesses.category}</td>
+                    <td>{businesses.license_status}</td>
+                    <td>{businesses.stage}</td>
+                    <td>{businesses.assigned_rep || 'Unassigned'}</td>
+                    <td>{businesses.last_activity_at}</td>
                 </tr>
             ))}
         </tbody>
