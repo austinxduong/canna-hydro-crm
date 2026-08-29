@@ -3,7 +3,7 @@ CREATE EXTENSION IF NOT EXISTS postgis;
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
 CREATE TABLE "Invites" (
-  "id" integer PRIMARY KEY,
+  "id" integer PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
   "email" varchar,
   "token" varchar UNIQUE, 
   "status" varchar,
@@ -13,14 +13,14 @@ CREATE TABLE "Invites" (
 );
 
 CREATE TABLE "auth_identities" (
-  "id" integer PRIMARY KEY,
+  "id" integer PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
   "user_id" integer,
   "provider" varchar,
   "provider_user_id" varchar
 );
 
 CREATE TABLE "Users" (
-  "id" integer PRIMARY KEY,
+  "id" integer PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
   "name" varchar,
   "email" varchar UNIQUE,
   "status" varchar,
@@ -29,7 +29,7 @@ CREATE TABLE "Users" (
 );
 
 CREATE TABLE "Business" (
-  "id" integer PRIMARY KEY,
+  "id" integer PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
   "name" varchar,
   "address" varchar,
   "phone" varchar,
@@ -43,7 +43,7 @@ CREATE TABLE "Business" (
 );
 
 CREATE TABLE "activity_log" (
-  "id" integer PRIMARY KEY,
+  "id" integer PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
   "user_id" integer,
   "business_id" integer,
   "activity_type" varchar,
@@ -52,7 +52,7 @@ CREATE TABLE "activity_log" (
 );
 
 CREATE TABLE "source_records" (
-  "id" integer PRIMARY KEY,
+  "id" integer PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
   "business_id" integer,
   "source" varchar,
   "source_record_id" varchar,
