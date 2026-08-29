@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "start": "node server.js"
   },
   "keywords": [],
   "author": "",
