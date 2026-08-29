@@ -37,7 +37,7 @@ useEffect(() => {
 }, [serverUrl])
 
 if (loading) {
-    return <Ring className="size-16 text-[#00d56e]"></Ring>
+    return <div className="flex justify-center"><Ring className="size-16 text-[#00d56e] justify-center"></Ring></div>
 } 
 
 if (error) {
