@@ -23,7 +23,21 @@ const [error, setError] = useState(null)
     }, [serverUrl])
 
   return (
-    <div>BusinessList</div>
+    <table>
+        <thead>
+
+        </thead>
+        <tbody>
+            {data.map((businesses) =>(
+                <tr key={businesses.id}>
+                    <td>{businesses.id}</td>
+                    <td>{businesses.name}</td>
+                    <td>{businesses.address}</td>
+                    <td>{businesses.category}</td>
+                </tr>
+            ))}
+        </tbody>
+    </table>
   )
 }
 
