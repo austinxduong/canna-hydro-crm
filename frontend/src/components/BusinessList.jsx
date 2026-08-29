@@ -2,11 +2,12 @@ import { useState, useEffect } from 'react';
 import { Ring } from '@/components/loading-ui/ring'
 import React from 'react'
 
-function getStageColor(stage) {
-    if (stage === 'Customer') return 'bg-green-100 text-green-700'
-    if (stage === 'Lead') return 'bg-gray-100 text-gray-700'
-    if (stage === 'Contacted') return 'bg-blue-100 text-blue-700'
-    if (stage === 'Lost') return 'bg-red-100 text-red-700'
+
+function getStageDotColor(stage) {
+    if (stage === 'Customer') return 'bg-green-500 '
+    if (stage === 'Lead') return 'bg-yellow-500'
+    if (stage === 'Contacted') return 'bg-blue-500'
+    if (stage === 'Lost') return 'bg-red-500'
 }
 
 
@@ -68,10 +69,10 @@ if (error) {
                     <td>{businesses.address}</td>
                     <td>{businesses.category}</td>
                     <td>{businesses.license_status}</td>
-                    <td className="inline-flex items-center px-3 p-y rounded-full border border-emerald-500">
-                        
-                        {businesses.stage}
-                        
+                    <td>
+                        <span className="inline-flex items-center px-3 py-1 rounded-full border border-gray-300 gap-1.5">
+                            <span className={`size-2 rounded-full ${getStageDotColor(businesses.stage)}`}></span>{businesses.stage}   
+                        </span>
                     </td>
                     <td>{businesses.assigned_rep || 'Unassigned'}</td>
                     <td>{businesses.last_activity_at}</td>
