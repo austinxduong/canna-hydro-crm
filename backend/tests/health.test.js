@@ -34,3 +34,14 @@ test('GET by ID business route', async () => {
     expect(response.body).toHaveProperty('id', id)
 })
 
+test('UPDATE by ID business route', async () => {
+    const createResponse = await request(app)
+        .post('/businesses')
+        .send({name: 'John', address: '555 Sun River', category: 'Hydroponics'})
+    const id = createResponse.body[0].id
+    const response = await request(app)
+        .patch(`/businesses/${id}`)
+        .send({name: 'Remy', address: '555 Sun River', category: 'Hydroponics'})
+    expect(response.status).toBe(200)
+    expect(response.body.name).toBe('Remy')
+})
