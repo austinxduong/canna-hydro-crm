@@ -77,9 +77,7 @@ if (error) {
         <thead>
             
             <tr>
-            <th>id</th>
             <th>Business</th>
-            <th>Address</th>
             <th>Category</th>
             <th>License</th>
             <th>Stage</th>
@@ -91,9 +89,11 @@ if (error) {
         <tbody>
             {data.map((businesses) =>(
                 <tr key={businesses.id}>
-                    <td>{businesses.id}</td>
-                    <td>{businesses.name}</td>
-                    <td>{businesses.address}</td>
+                    <td>
+                        <div className="font-semibold">{businesses.name}</div>
+                        <div className="text-sm text-gray-500">{businesses.address}</div>
+                    </td>
+                    
                     <td>{businesses.category}</td>
                     <td>{businesses.license_status}</td>
                     <td>
