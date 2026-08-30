@@ -40,7 +40,7 @@ function timeAgo(last_activity_at) {
 
 
 const BusinessList = () => {
-const [serverUrl, setServerUrl] = useState('https://canna-hydro-crm-server.onrender.com/businesses')
+const [serverUrl, setServerUrl] = useState('https://canna-hydro-crm.onrender.com/businesses')
 const [data, setData] = useState([])
 const [error, setError] = useState(null)
 const [loading, setLoading] = useState(true)
