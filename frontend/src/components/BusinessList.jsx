@@ -71,42 +71,49 @@ if (loading) {
 if (error) {
     return <div>Something went wrong: {error} </div>
 }
+ function resultsCount(count) {
+        return `${count} result${count === 1 ? '' : 's'}`
 
+ }
   return (
-    <table>
-        <thead>
-            
-            <tr>
-            <th>Business</th>
-            <th>Category</th>
-            <th>License</th>
-            <th>Stage</th>
-            <th>Rep</th>
-            <th>Last Activity</th>
-            
-            </tr>
-        </thead>
-        <tbody>
-            {data.map((businesses) =>(
-                <tr key={businesses.id}>
-                    <td>
-                        <div className="font-semibold">{businesses.name}</div>
-                        <div className="text-sm text-gray-500">{businesses.address}</div>
-                    </td>
-                    
-                    <td>{businesses.category}</td>
-                    <td>{businesses.license_status}</td>
-                    <td>
-                        <span className="inline-flex items-center px-3 py-1 rounded-full border border-gray-300 gap-1.5">
-                            <span className={`size-2 rounded-full ${getStageDotColor(businesses.stage)}`}></span>{businesses.stage}   
-                        </span>
-                    </td>
-                    <td>{businesses.assigned_rep || 'Unassigned'}</td>
-                    <td>{timeAgo(businesses.last_activity_at)}</td>
+    <div>
+        <div className="flex justify-between mt-5">
+        {resultsCount(data.length)} <div className="flex gap-2"><button className="border border-solid rounded-[10px] p-1">Export</button><button className="border border-solid rounded-[10px] p-1">Bulk assign rep</button></div>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                <th>Business</th>
+                <th>Category</th>
+                <th>License</th>
+                <th>Stage</th>
+                <th>Rep</th>
+                <th>Last Activity</th>
+                
                 </tr>
-            ))}
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                {data.map((businesses) =>(
+                    <tr key={businesses.id}>
+                        <td>
+                            <div className="font-semibold">{businesses.name}</div>
+                            <div className="text-sm text-gray-500">{businesses.address}</div>
+                        </td>
+                        
+                        <td>{businesses.category}</td>
+                        <td>{businesses.license_status}</td>
+                        <td>
+                            <span className="inline-flex items-center px-3 py-1 rounded-full border border-gray-300 gap-1.5">
+                                <span className={`size-2 rounded-full ${getStageDotColor(businesses.stage)}`}></span>{businesses.stage}   
+                            </span>
+                        </td>
+                        <td>{businesses.assigned_rep || 'Unassigned'}</td>
+                        <td>{timeAgo(businesses.last_activity_at)}</td>
+                    </tr>
+                ))}
+            </tbody>
+        </table>
+    </div>
   )
 }
 
