@@ -38,6 +38,10 @@ function timeAgo(last_activity_at) {
         return `${months} month${months === 1 ? '' : 's'} ago`
  }
 
+ function resultsCount(count) {
+        return `${count} result${count === 1 ? '' : 's'}`
+
+ }
 
 const BusinessList = () => {
 const [serverUrl, setServerUrl] = useState('https://canna-hydro-crm.onrender.com/businesses')
@@ -71,10 +75,7 @@ if (loading) {
 if (error) {
     return <div>Something went wrong: {error} </div>
 }
- function resultsCount(count) {
-        return `${count} result${count === 1 ? '' : 's'}`
 
- }
   return (
     <div>
         <div className="flex justify-between mt-5">
@@ -83,32 +84,32 @@ if (error) {
         <table>
             <thead>
                 <tr>
-                <th>Business</th>
-                <th>Category</th>
-                <th>License</th>
-                <th>Stage</th>
-                <th>Rep</th>
-                <th>Last Activity</th>
+                <th className="py-3">Business</th>
+                <th className="py-3">Category</th>
+                <th className="py-3">License</th>
+                <th className="py-3">Stage</th>
+                <th className="py-3">Rep</th>
+                <th className="py-3">Last Activity</th>
                 
                 </tr>
             </thead>
             <tbody>
                 {data.map((businesses) =>(
                     <tr key={businesses.id}>
-                        <td>
+                        <td className="pr-15">
                             <div className="font-semibold">{businesses.name}</div>
-                            <div className="text-sm text-gray-500">{businesses.address}</div>
+                            <div className="text-sm text-gray-500 pb-3">{businesses.address}</div>
                         </td>
                         
-                        <td>{businesses.category}</td>
-                        <td>{businesses.license_status}</td>
-                        <td>
+                        <td className="px-3">{businesses.category}</td>
+                        <td className="px-3">{businesses.license_status}</td>
+                        <td className="px-3">
                             <span className="inline-flex items-center px-3 py-1 rounded-full border border-gray-300 gap-1.5">
                                 <span className={`size-2 rounded-full ${getStageDotColor(businesses.stage)}`}></span>{businesses.stage}   
                             </span>
                         </td>
-                        <td>{businesses.assigned_rep || 'Unassigned'}</td>
-                        <td>{timeAgo(businesses.last_activity_at)}</td>
+                        <td className="px-3">{businesses.assigned_rep || 'Unassigned'}</td>
+                        <td className="px-3">{timeAgo(businesses.last_activity_at)}</td>
                     </tr>
                 ))}
             </tbody>
