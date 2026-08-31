@@ -1,10 +1,10 @@
 INSERT INTO "Business" (name, address, phone, location, category, license_status, license_number, stage, last_activity_at)
 VALUES
 ('Emerald Leaf Dispensary', '4521 Broadway St, Denver, CO 80216', '303-555-0142', ST_SetSRID(ST_MakePoint(-104.9847, 39.7817), 4326)::geography, 'Dispensary', 'Active', 'CO-DISP-88231', 'Customer', '2026-08-15 14:30:00'),
-('GreenGro Hydroponics Supply', '1220 Pearl St, Boulder, CO 80302', '720-555-0198', ST_SetSRID(ST_MakePoint(-105.2705, 40.0150), 4326)::geography, 'Hydroponics', 'Active', NULL, 'Lead', '2026-08-20 09:15:00'),
+('GreenGro Hydroponics Supply', '1220 Pearl St, Boulder, CO 80302', '720-555-0198', ST_SetSRID(ST_MakePoint(-105.2705, 40.0150), 4326)::geography, 'Hydroponics', 'Active', NULL, 'Demo Scheduled', '2026-08-20 09:15:00'),
 ('Cascade Cannabis Co.', '890 SE Division St, Portland, OR 97202', '503-555-0173', ST_SetSRID(ST_MakePoint(-122.6412, 45.5051), 4326)::geography, 'Dispensary', 'Active', 'OR-DISP-44120', 'Contacted', '2026-08-22 11:00:00'),
 ('Sunroot Hydro & Garden', '3390 W Chandler Blvd, Ann Arbor, MI 48103', '734-555-0119', ST_SetSRID(ST_MakePoint(-83.7430, 42.2808), 4326)::geography, 'Hydroponics', 'Active', NULL, 'Customer', '2026-08-10 16:45:00'),
-('Highland Wellness Dispensary', '2100 W 25th St, Los Angeles, CA 90018', '213-555-0164', ST_SetSRID(ST_MakePoint(-118.3090, 34.0311), 4326)::geography, 'Dispensary', 'Pending', 'CA-DISP-91820', 'Lead', '2026-08-25 08:20:00'),
+('Highland Wellness Dispensary', '2100 W 25th St, Los Angeles, CA 90018', '213-555-0164', ST_SetSRID(ST_MakePoint(-118.3090, 34.0311), 4326)::geography, 'Dispensary', 'Pending', 'CA-DISP-91820', 'Demo Scheduled', '2026-08-25 08:20:00'),
 ('Blue River Grow Supply', '515 Main St, Boulder, CO 80302', '303-555-0187', ST_SetSRID(ST_MakePoint(-105.2711, 40.0176), 4326)::geography, 'Hydroponics', 'Expired', NULL, 'Lost', '2026-06-30 13:00:00'),
 ('Northgate Dispensary', '778 N Interstate Ave, Portland, OR 97227', '503-555-0141', ST_SetSRID(ST_MakePoint(-122.6764, 45.5548), 4326)::geography, 'Dispensary', 'Active', 'OR-DISP-33017', 'Customer', '2026-08-27 10:10:00'),
 ('Ann Arbor Aquaponics', '1550 Eisenhower Pkwy, Ann Arbor, MI 48108', '734-555-0155', ST_SetSRID(ST_MakePoint(-83.7280, 42.2496), 4326)::geography, 'Hydroponics', 'Active', NULL, 'Contacted', '2026-08-18 15:30:00');

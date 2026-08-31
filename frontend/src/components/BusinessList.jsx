@@ -4,9 +4,10 @@ import React from 'react'
 
 
 function getStageDotColor(stage) {
+    if (stage === 'New') return 'bg-pink-500'
+    if (stage === 'Contacted') return 'bg-orange-500'
+    if (stage === 'Demo Scheduled') return 'bg-yellow-500'
     if (stage === 'Customer') return 'bg-green-500 '
-    if (stage === 'Lead') return 'bg-yellow-500'
-    if (stage === 'Contacted') return 'bg-blue-500'
     if (stage === 'Lost') return 'bg-red-500'
 }
 
@@ -77,9 +78,9 @@ if (error) {
 }
 
   return (
-    <div>
+    <div className="p-5">
         <div className="flex justify-between mt-5">
-        {resultsCount(data.length)} <div className="flex gap-2"><button className="border border-solid rounded-[10px] p-1">Export</button><button className="border border-solid rounded-[10px] p-1">Bulk assign rep</button></div>
+        {resultsCount(data.length)} <div className="flex gap-2"><button className="border border-solid border-gray-400 rounded-[10px] p-2">Export</button><button className="border border-solid border-gray-400 rounded-[10px] p-2">Bulk assign rep</button></div>
         </div>
         <table>
             <thead>
@@ -104,7 +105,7 @@ if (error) {
                         <td className="px-3">{businesses.category}</td>
                         <td className="px-3">{businesses.license_status}</td>
                         <td className="px-3">
-                            <span className="inline-flex items-center px-3 py-1 rounded-full border border-gray-300 gap-1.5">
+                            <span className="inline-flex items-center px-3 py-1 rounded-full border border-gray-300 gap-1.5 text-sm">
                                 <span className={`size-2 rounded-full ${getStageDotColor(businesses.stage)}`}></span>{businesses.stage}   
                             </span>
                         </td>

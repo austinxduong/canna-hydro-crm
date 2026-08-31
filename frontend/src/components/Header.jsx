@@ -2,7 +2,7 @@ import React from 'react'
 
 const Header = () => {
   return (
-    <div className="flex justify-between items-center bg-gray-100 border rounded-xl px-4 py-1.5">
+    <div className="flex justify-between items-center bg-gray-100 px-4 py-1.5 border-b border-gray-300">
         <div className="font-bold text-xl">CannaHydro</div>
         <div className="text-gray-500">Dashboard</div>
         <div className="text-gray-500">Map</div>
