@@ -80,27 +80,33 @@ if (error) {
   return (
     <div className="p-5">
         <div className="flex justify-between mt-5">
-        {resultsCount(data.length)} <div className="flex gap-2"><button className="border border-solid border-gray-400 rounded-[10px] p-2">Export</button><button className="border border-solid border-gray-400 rounded-[10px] p-2">Bulk assign rep</button></div>
+        {resultsCount(data.length)} <div className="flex gap-2"><button className="border border-solid border-gray-400 rounded-[10px] p-2 font-bold text-gray-500 text-sm bg-gray-50">Export</button><button className="border border-solid border-gray-400 rounded-[10px] p-2 font-bold text-gray-500 text-sm bg-gray-50">Bulk assign rep</button></div>
         </div>
         <table>
             <thead>
-                <tr>
-                <th className="py-3">Business</th>
-                <th className="py-3">Category</th>
-                <th className="py-3">License</th>
-                <th className="py-3">Stage</th>
-                <th className="py-3">Rep</th>
-                <th className="py-3">Last Activity</th>
+                <tr className="border-b border-gray-400">
+                <th className="py-3 text-sm text-gray-500">BUSINESS</th>
+                <th className="py-3 text-sm text-gray-500">CATEGORY</th>
+                <th className="py-3 text-sm text-gray-500">LICENSE</th>
+                <th className="py-3 text-sm text-gray-500">STAGE</th>
+                <th className="py-3 text-sm text-gray-500">REP</th>
+                <th className="py-3 text-sm text-gray-500">LAST ACTIVITY</th>
                 
                 </tr>
             </thead>
             <tbody>
                 {data.map((businesses) =>(
-                    <tr key={businesses.id}>
-                        <td className="pr-15">
-                            <div className="font-semibold">{businesses.name}</div>
-                            <div className="text-sm text-gray-500 pb-3">{businesses.address}</div>
+                    <tr className="border-b border-gray-400 hover:bg-gray-50" key={businesses.id}>
+                        <td className="pr-15 py-3 px-7">
+                            <div className="flex items-center gap-3">
+                                <div className="border-l-2 border-gray-300 h-5"></div>
+                                <div>
+                                    <div className="font-semibold" >{businesses.name}</div>
+                                    <div className="text-sm text-gray-500 pb-3">{businesses.address}</div>
+                                </div>
+                            </div>
                         </td>
+                    
                         
                         <td className="px-3">{businesses.category}</td>
                         <td className="px-3">{businesses.license_status}</td>
