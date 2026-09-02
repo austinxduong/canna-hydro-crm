@@ -24,6 +24,9 @@ const limiter = rateLimit({
     message: {message:'Too many requests, please try again later'}
 })
 
+console.log('RATE_LIMIT_MAX at app.js load time:', process.env.RATE_LIMIT_MAX);
+console.log('SANITY_CHECK:', process.env.SANITY_CHECK);
+
 // route handler for the first test
 app.get('/health', (req, res) => {
     res.send('hello world')
