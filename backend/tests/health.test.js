@@ -85,6 +85,14 @@ test('DELETE by id, 404 handling', async () => {
     expect(response.body.message).toBe("Item not found")
 })
 
+test('POST, 400 missing fields', async () => {
+    const response = await request(app)
+        .post('/businesses')
+        .send({name: "", address: "", category:""})
+    expect(response.status).toBe(400)
+    expect(response.body.message).toBe("fields cannot be empty")
+})
+
 test('PATCH by id, 400 missing fields', async () => {
     const createResponse = await request(app)
         .post('/businesses')
@@ -96,3 +104,4 @@ test('PATCH by id, 400 missing fields', async () => {
     expect(response.status).toBe(400)
     expect(response.body.message).toBe("fields cannot be empty")
 })
+
