@@ -57,4 +57,28 @@ test('DELETE by ID business route', async () => {
     expect(response.body).toHaveProperty('id', id)
 })
 
-test()
+test('GET by id, 404 handling', async () => {
+    const nonExistentId = '999999999'
+    const response = await request(app)
+        .get(`/businesses/${nonExistentId}`)
+    expect(response.status).toBe(404)
+    expect(response.body.message).toBe("Item not found")
+})
+
+test('PATCH by id, 404 handling', async () => {
+    const nonExistentId = '999999999'
+    const updateData = { name: "new name"}
+    const response = await request(app)
+        .patch(`/businesses/${nonExistentId}`)
+        .send(updateData)
+    expect(response.status).toBe(404)
+    expect(response.body.message).toBe("Item not found")
+})
+
+test('DELETE by id, 404 handling', async () => {
+    const nonExistentId = '999999999'
+    const response = await request(app)
+        .delete(`/businesses/${nonExistentId}`)
+    expect(response.status).toBe(404)
+    expect(response.body.message).toBe("Item not found")
+})
