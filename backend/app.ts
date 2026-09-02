@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express()
-const pool = require('./db/Pool')
+const pool = require('./db/Pool.ts')
 const cors = require('cors');
 const { rateLimit } = require('express-rate-limit')
 import { Request, Response, NextFunction } from 'express';
