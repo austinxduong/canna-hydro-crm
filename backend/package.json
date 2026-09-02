@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test:watch": "vitest --config vitest.config.mjs",
-    "start": "node server.js"
+    "start": "tsx server.ts"
   },
   "keywords": [],
   "author": "",
@@ -19,7 +19,13 @@
     "pg": "^8.23.0"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/node": "^26.4.1",
+    "@types/pg": "^8.23.1",
     "supertest": "^7.2.2",
+    "tsx": "^4.23.13",
+    "typescript": "^5.9.3",
     "vitest": "^4.1.11"
   }
 }

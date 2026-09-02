@@ -3,17 +3,18 @@ const app = express()
 const pool = require('./db/Pool')
 const cors = require('cors');
 const { rateLimit } = require('express-rate-limit')
+import { Request, Response, NextFunction } from 'express';
 
 app.use(express.json())
 app.use(cors())
 
 //middlewares
-app.use((req, res, next) =>{
+app.use((req: Request, res: Response, next: NextFunction) =>{
     console.log('Time:', Date.now());
     next()
 })
 
-app.use('/health', (req, res, next) => {
+app.use('/health', (req: Request, res: Response, next: NextFunction) => {
     console.log('Request Type', req.method);
     next();
 })
@@ -24,16 +25,13 @@ const limiter = rateLimit({
     message: {message:'Too many requests, please try again later'}
 })
 
-console.log('RATE_LIMIT_MAX at app.js load time:', process.env.RATE_LIMIT_MAX);
-console.log('SANITY_CHECK:', process.env.SANITY_CHECK);
-
 // route handler for the first test
-app.get('/health', (req, res) => {
+app.get('/health', (req: Request, res: Response) => {
     res.send('hello world')
 });
 
 // route handler for the second test
-app.get('/businesses', async (req, res) => {
+app.get('/businesses', async (req: Request, res: Response) => {
     try {
         const result = await pool.query('SELECT * FROM "Business"')
         res.json(result.rows);
@@ -43,7 +41,7 @@ app.get('/businesses', async (req, res) => {
     }
 })
 
-app.post('/businesses', limiter, async (req, res) => {
+app.post('/businesses', limiter, async (req: Request, res: Response) => {
     try {
         if (!req.body.name || !req.body.address || !req.body.category) {
             return res.status(400).json({message: "fields cannot be empty"})
@@ -56,7 +54,7 @@ app.post('/businesses', limiter, async (req, res) => {
     }
 })
 
-app.get('/businesses/:id', async (req, res) =>{
+app.get('/businesses/:id', async (req: Request, res: Response) =>{
     try {
         const result = await pool.query('SELECT * FROM "Business" WHERE id = $1', [req.params.id])
     if (result.rows.length === 0) {
@@ -69,7 +67,7 @@ app.get('/businesses/:id', async (req, res) =>{
     }
 })
 
-app.patch('/businesses/:id', limiter, async (req, res) =>{
+app.patch('/businesses/:id', limiter, async (req: Request, res: Response) =>{
     try {
         if (!req.body.name || !req.body.address || !req.body.category) {
             return res.status(400).json({message: "fields cannot be empty"})
@@ -85,7 +83,7 @@ app.patch('/businesses/:id', limiter, async (req, res) =>{
     }
 })
 
-app.delete('/businesses/:id', limiter, async (req, res) => {
+app.delete('/businesses/:id', limiter, async (req: Request, res: Response) => {
     try {
         const result = await pool.query('DELETE FROM "Business" WHERE id = $1 RETURNING *', [req.params.id])
         if (result.rows.length === 0) {

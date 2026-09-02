@@ -1,6 +1,6 @@
 import request from 'supertest'
 import { test, expect }  from 'vitest';
-import app  from './app';
+import app  from './app.ts';
 
 
 test('health check', async () =>{
