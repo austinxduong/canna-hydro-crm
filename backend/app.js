@@ -45,8 +45,10 @@ app.get('/businesses', async (req, res) => {
 
 app.post('/businesses', limiter, async (req, res) => {
     try {
-        const result = await pool.query('INSERT INTO "Business"(name, address, category) VALUES ($1, $2, $3) RETURNING *', [req.body.name, req.body.address, req.body.category],
-        )
+        if (!req.body.name || !req.body.address || !req.body.category) {
+            return res.status(400).json({message: "fields cannot be empty"})
+        }
+        const result = await pool.query('INSERT INTO "Business"(name, address, category) VALUES ($1, $2, $3) RETURNING *', [req.body.name, req.body.address, req.body.category],)
         res.status(201).json(result.rows)
     } catch(error) {
         res.status(500).send('Something went wrong')
@@ -69,7 +71,10 @@ app.get('/businesses/:id', async (req, res) =>{
 
 app.patch('/businesses/:id', limiter, async (req, res) =>{
     try {
-        const result = await pool.query('UPDATE "Business" SET name = $2 WHERE id =$1 RETURNING *' , [req.params.id, req.body.name])
+        if (!req.body.name || !req.body.address || !req.body.category) {
+            return res.status(400).json({message: "fields cannot be empty"})
+        }
+        const result = await pool.query('UPDATE "Business" SET name = $2, address = $3, category = $4 WHERE id =$1 RETURNING *' , [req.params.id, req.body.name, req.body.address, req.body.category])
         if (result.rows.length === 0) {
             return res.status(404).json({message: "Item not found"})
         }

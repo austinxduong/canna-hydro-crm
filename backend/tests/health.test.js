@@ -44,6 +44,8 @@ test('UPDATE by ID business route', async () => {
         .send({name: 'Remy', address: '555 Sun River', category: 'Hydroponics'})
     expect(response.status).toBe(200)
     expect(response.body.name).toBe('Remy')
+    expect(response.body.address).toBe('555 Sun River')
+    expect(response.body.category).toBe('Hydroponics')
 })
 
 test('DELETE by ID business route', async () => {
@@ -67,7 +69,7 @@ test('GET by id, 404 handling', async () => {
 
 test('PATCH by id, 404 handling', async () => {
     const nonExistentId = '999999999'
-    const updateData = { name: "new name"}
+    const updateData = { name: "new name", address: "555 Sun River", category:"Hydroponics"}
     const response = await request(app)
         .patch(`/businesses/${nonExistentId}`)
         .send(updateData)
@@ -81,4 +83,16 @@ test('DELETE by id, 404 handling', async () => {
         .delete(`/businesses/${nonExistentId}`)
     expect(response.status).toBe(404)
     expect(response.body.message).toBe("Item not found")
+})
+
+test('PATCH by id, 400 missing fields', async () => {
+    const createResponse = await request(app)
+        .post('/businesses')
+        .send({name: "new name", address: "555 Sun River", category: "Hydroponics"})
+    const id = createResponse.body[0].id
+    const response = await request(app)
+        .patch(`/businesses/${id}`)
+        .send({name: "new name", address: "", category: ""})
+    expect(response.status).toBe(400)
+    expect(response.body.message).toBe("fields cannot be empty")
 })
