@@ -2,8 +2,21 @@ import { useState, useEffect } from 'react';
 import { Ring } from '@/components/loading-ui/ring'
 import React from 'react'
 
+interface Business {
+    id: number
+    name: string
+    address: string
+    phone: string
+    category: string
+    license_status: string
+    license_number: string
+    stage: string
+    assigned_rep: string | null
+    last_activity_at: string
+    location: string
+}
 
-function getStageDotColor(stage) {
+function getStageDotColor(stage: string) {
     if (stage === 'New') return 'bg-pink-500'
     if (stage === 'Contacted') return 'bg-orange-500'
     if (stage === 'Demo Scheduled') return 'bg-yellow-500'
@@ -11,7 +24,7 @@ function getStageDotColor(stage) {
     if (stage === 'Lost') return 'bg-red-500'
 }
 
-function timeAgo(last_activity_at) {
+function timeAgo(last_activity_at: string) {
     const last_activity = new Date(last_activity_at).getTime(); // turn last_activity_at to milliseconds
     const nowInMillInSeconds = Date.now();
     const elapsedSeconds = Math.floor((nowInMillInSeconds - last_activity) / 1000); // divide to turn it into seconds (i.e 1000 is equal to 1 second)
@@ -39,15 +52,15 @@ function timeAgo(last_activity_at) {
         return `${months} month${months === 1 ? '' : 's'} ago`
  }
 
- function resultsCount(count) {
+ function resultsCount(count: number) {
         return `${count} result${count === 1 ? '' : 's'}`
 
  }
 
 const BusinessList = () => {
 const [serverUrl, setServerUrl] = useState('https://canna-hydro-crm.onrender.com/businesses')
-const [data, setData] = useState([])
-const [error, setError] = useState(null)
+const [data, setData] = useState<Business[]>([])
+const [error, setError] = useState<string | null>(null)
 const [loading, setLoading] = useState(true)
 
 useEffect(() => {
@@ -59,7 +72,7 @@ useEffect(() => {
             console.log(json)
 
         } catch (err) {
-            setError(err.message)
+            setError(err instanceof Error ? err.message : String(err))
         } finally {
             setLoading(false)
         }

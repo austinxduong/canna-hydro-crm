@@ -1,10 +1,11 @@
 import { cn } from "@/lib/utils";
+import type { SVGProps } from "react"
 
 function Ring({
   className,
   style,
   ...props
-}) {
+}: SVGProps<SVGSVGElement>) {
   return (
     <>
       <style>{`
