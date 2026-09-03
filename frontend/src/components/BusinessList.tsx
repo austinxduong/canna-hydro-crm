@@ -70,7 +70,7 @@ useEffect(() => {
             const response = await fetch(SERVER_URL);
             const json = await response.json();
             setData(json);
-            console.log(json)
+            console.log("console.log(json)",json)
 
         } catch (err) {
             setError(err instanceof Error ? err.message : String(err))
@@ -84,7 +84,7 @@ useEffect(() => {
 }, [])
 
 if (loading) {
-    return <div className="flex justify-center"><Ring className="size-16 text-[#00d56e] justify-center"></Ring></div>
+    return <div className="flex justify-center" role="status" aria-label="Loading businesses"><Ring className="size-16 text-[#00d56e] justify-center"></Ring></div>
 } 
 
 if (error) {
