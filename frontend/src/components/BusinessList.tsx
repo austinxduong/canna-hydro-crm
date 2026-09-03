@@ -57,8 +57,9 @@ function timeAgo(last_activity_at: string) {
 
  }
 
+const SERVER_URL= 'https://canna-hydro-crm.onrender.com/businesses'
+
 const BusinessList = () => {
-const [serverUrl, setServerUrl] = useState('https://canna-hydro-crm.onrender.com/businesses')
 const [data, setData] = useState<Business[]>([])
 const [error, setError] = useState<string | null>(null)
 const [loading, setLoading] = useState(true)
@@ -66,7 +67,7 @@ const [loading, setLoading] = useState(true)
 useEffect(() => {
     async function startFetching() {
         try {
-            const response = await fetch(serverUrl);
+            const response = await fetch(SERVER_URL);
             const json = await response.json();
             setData(json);
             console.log(json)
@@ -80,7 +81,7 @@ useEffect(() => {
 
 
     startFetching();
-}, [serverUrl])
+}, [])
 
 if (loading) {
     return <div className="flex justify-center"><Ring className="size-16 text-[#00d56e] justify-center"></Ring></div>
