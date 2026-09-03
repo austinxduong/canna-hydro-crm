@@ -18,7 +18,7 @@ const mockBusiness = [
   },
 ]
 
-describe("fetch list businessses", () =>{
+describe("fetches a business", () =>{
     beforeEach(() => {
         vi.clearAllMocks()
     })
@@ -33,11 +33,30 @@ describe("fetch list businessses", () =>{
         });
         vi.stubGlobal('fetch', fetchMock)
 
-    render(<BusinessList/>)
-    
+        render(<BusinessList/>)
+
        await waitFor(() => {
         expect(screen.getByText('Emerald Leaf Dispensary')).toBeInTheDocument()
        })
     
+    })
+
+    it('throws an error if fetching fails', async () => {
+
+        const fetchMock = vi.fn().mockResolvedValue({
+            ok: false,
+            status: 500,
+            json: async () => {
+                throw new Error('Failed to parse server data')
+            }
+        })
+        vi.stubGlobal('fetch', fetchMock)
+        
+        render(<BusinessList/>)
+
+        await waitFor(() => {
+            expect(screen.getByText(/Something went wrong/i)).toBeInTheDocument()
+            expect(screen.getByText(/Failed to parse server data/i)).toBeInTheDocument()
+        })
     })
 })
