@@ -60,3 +60,24 @@ describe("fetches a business", () =>{
         })
     })
 })
+
+describe("loads a spinner", () => {
+    beforeEach(() => {
+        vi.clearAllMocks()
+    })
+    afterEach(() => {
+        vi.unstubAllGlobals()
+    })
+    it ("fetches the loading spinner", () => {
+        const fetchMock = vi.fn().mockResolvedValue({
+            ok: false,
+            json: async () => mockBusiness,
+        })
+        vi.stubGlobal("fetch", fetchMock)
+
+        render(<BusinessList/>)
+        const spinner = screen.getByRole("status", { name: /Loading Businesses/i })
+        expect(screen.getByRole('status')).toBeInTheDocument()
+        expect(spinner).toBeInTheDocument()
+    })
+}) 
