@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { getStageDotColor, timeAgo } from '@/lib/formatters'
+import { getStageDotColor, timeAgo, resultsCount } from '@/lib/formatters'
 import { vi } from 'vitest'
 
 describe('returns stage colors',() => {
@@ -73,5 +73,20 @@ describe('returns last activity at', () => {
 
         const fourWeeksAgo = new Date('2026-08-02T10:59:50Z').toISOString()
         expect(timeAgo(fourWeeksAgo)).toBe("4 weeks ago")
+    })
+})
+
+describe('returns the results.length of businesses', () => {
+    it('returns the length of results', () => {
+        const count = 8
+        expect(resultsCount(count)).toBe("8 results")
+    })
+    it('returns the length for 1 result', () => {
+        const count = 1
+        expect(resultsCount(count)).toBe("1 result")
+    })
+    it('returns the length for 0 results', () => {
+        const count = 0
+        expect(resultsCount(count)).toBe("0 results")
     })
 })
