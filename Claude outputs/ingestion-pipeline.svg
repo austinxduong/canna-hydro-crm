@@ -1,0 +1,113 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1300 760" role="img"
+     aria-label="CannaHydro ingestion pipeline: three sources are normalized into one shared record shape, which is always logged to source_records, then matched against existing Business rows first by exact license number and, when no license number is present, by name similarity and proximity, before being inserted as new or merged into an existing row.">
+  <rect x="0" y="0" width="1300" height="760" fill="#ffffff"/>
+
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1f2937"/>
+    </marker>
+    <marker id="arrowGray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#6b7280"/>
+    </marker>
+  </defs>
+
+  <text x="650" y="34" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" fill="#1f2937">CannaHydro Ingestion Pipeline</text>
+
+  <!-- ================= Column 1: sources / extract ================= -->
+  <g font-family="Arial, Helvetica, sans-serif">
+    <rect x="40" y="70" width="220" height="90" rx="6" fill="#ffffff" stroke="#1f2937" stroke-width="1.5"/>
+    <text x="150" y="105" text-anchor="middle" font-size="14" font-weight="700" fill="#1f2937">State License</text>
+    <text x="150" y="123" text-anchor="middle" font-size="14" font-weight="700" fill="#1f2937">Registry</text>
+    <text x="150" y="145" text-anchor="middle" font-size="11" fill="#6b7280">extract · has license_number</text>
+
+    <rect x="40" y="305" width="220" height="90" rx="6" fill="#ffffff" stroke="#1f2937" stroke-width="1.5"/>
+    <text x="150" y="340" text-anchor="middle" font-size="14" font-weight="700" fill="#1f2937">ArcGIS Business</text>
+    <text x="150" y="358" text-anchor="middle" font-size="14" font-weight="700" fill="#1f2937">Search</text>
+    <text x="150" y="380" text-anchor="middle" font-size="11" fill="#6b7280">extract · no license #</text>
+
+    <rect x="40" y="540" width="220" height="90" rx="6" fill="#ffffff" stroke="#1f2937" stroke-width="1.5"/>
+    <text x="150" y="575" text-anchor="middle" font-size="14" font-weight="700" fill="#1f2937">OSM Overpass</text>
+    <text x="150" y="593" text-anchor="middle" font-size="14" font-weight="700" fill="#1f2937">API</text>
+    <text x="150" y="615" text-anchor="middle" font-size="11" fill="#6b7280">extract · no license #</text>
+  </g>
+
+  <!-- ============ callout: common intermediate shape ============ -->
+  <g font-family="Arial, Helvetica, sans-serif">
+    <rect x="380" y="130" width="220" height="130" rx="6" fill="#ffffff" stroke="#9ca3af" stroke-width="1" stroke-dasharray="4 3"/>
+    <text x="490" y="150" text-anchor="middle" font-size="11" font-weight="700" fill="#4b5563">common record shape</text>
+    <text x="400" y="169" font-size="11" fill="#4b5563">name</text>
+    <text x="400" y="186" font-size="11" fill="#4b5563">address</text>
+    <text x="400" y="203" font-size="11" fill="#4b5563">lat / lng</text>
+    <text x="400" y="220" font-size="11" fill="#4b5563">category, license_number?</text>
+    <text x="400" y="237" font-size="11" fill="#4b5563">source, source_record_id</text>
+    <line x1="490" y1="260" x2="490" y2="303" stroke="#9ca3af" stroke-width="1" stroke-dasharray="4 3"/>
+  </g>
+
+  <!-- ================= Column 2: normalize ================= -->
+  <g font-family="Arial, Helvetica, sans-serif">
+    <rect x="380" y="305" width="220" height="110" rx="6" fill="#ffffff" stroke="#1f2937" stroke-width="1.5"/>
+    <text x="490" y="352" text-anchor="middle" font-size="15" font-weight="700" fill="#1f2937">Normalize</text>
+    <text x="490" y="373" text-anchor="middle" font-size="11" fill="#6b7280">one shape for all 3 sources</text>
+  </g>
+
+  <!-- source_records (audit trail, always written) -->
+  <g font-family="Arial, Helvetica, sans-serif">
+    <rect x="380" y="560" width="220" height="80" rx="6" fill="#ffffff" stroke="#1f2937" stroke-width="1.5"/>
+    <text x="490" y="595" text-anchor="middle" font-size="14" font-weight="700" fill="#1f2937">source_records</text>
+    <text x="490" y="614" text-anchor="middle" font-size="11" fill="#6b7280">raw + provenance, always kept</text>
+  </g>
+
+  <!-- ================= Column 3: dedup / match (accent, tiered) ================= -->
+  <g font-family="Arial, Helvetica, sans-serif">
+    <rect x="740" y="290" width="240" height="140" rx="6" fill="#fff7ed" stroke="#c2410c" stroke-width="2"/>
+    <text x="860" y="313" text-anchor="middle" font-size="15" font-weight="700" fill="#c2410c">Dedup / Match</text>
+    <line x1="756" y1="323" x2="964" y2="323" stroke="#fdba74" stroke-width="1"/>
+    <text x="756" y="341" font-size="11" font-weight="700" fill="#9a3412">1  license_number — exact</text>
+    <text x="768" y="356" font-size="10" fill="#c2703f">(state registry only)</text>
+    <text x="756" y="378" font-size="11" font-weight="700" fill="#9a3412">2  else: name trigram + ~50m</text>
+    <text x="768" y="393" font-size="10" fill="#c2703f">(ArcGIS / Overpass fallback)</text>
+    <text x="860" y="415" text-anchor="middle" font-size="10" fill="#9a3412">tier 1 wins when both are available</text>
+  </g>
+
+  <!-- ================= Column 4: Business ================= -->
+  <g font-family="Arial, Helvetica, sans-serif">
+    <rect x="1080" y="264" width="180" height="108" rx="6" fill="#ffffff" stroke="#1f2937" stroke-width="1.5"/>
+    <text x="1170" y="300" text-anchor="middle" font-size="15" font-weight="700" fill="#1f2937">Business</text>
+    <text x="1170" y="320" text-anchor="middle" font-size="11" fill="#6b7280">canonical row</text>
+    <text x="1170" y="338" text-anchor="middle" font-size="10" fill="#6b7280">has license_number,</text>
+    <text x="1170" y="352" text-anchor="middle" font-size="10" fill="#6b7280">license_status</text>
+  </g>
+
+  <!-- ================= Arrows: sources -> Normalize ================= -->
+  <g stroke="#1f2937" stroke-width="1.5" fill="none">
+    <line x1="260" y1="120" x2="378" y2="330" marker-end="url(#arrow)"/>
+    <line x1="260" y1="350" x2="378" y2="355" marker-end="url(#arrow)"/>
+    <line x1="260" y1="585" x2="378" y2="380" marker-end="url(#arrow)"/>
+  </g>
+  <text x="270" y="270" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#6b7280">raw json (per source)</text>
+
+  <!-- Normalize -> source_records -->
+  <line x1="490" y1="417" x2="490" y2="558" stroke="#1f2937" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="500" y="490" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#6b7280">always logged</text>
+
+  <!-- Normalize -> Dedup -->
+  <line x1="602" y1="360" x2="738" y2="360" stroke="#1f2937" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="613" y="345" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#6b7280">normalized record</text>
+
+  <!-- Dedup -> Business (two outcomes) -->
+  <line x1="982" y1="325" x2="1078" y2="300" stroke="#1f2937" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="985" y="292" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#6b7280">no match → INSERT</text>
+
+  <line x1="982" y1="400" x2="1078" y2="345" stroke="#1f2937" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="985" y="422" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#6b7280">match found → UPDATE</text>
+
+  <!-- Business -> source_records FK (dashed, secondary detail) -->
+  <polyline points="1170,372 1170,660 600,660 600,600" fill="none" stroke="#6b7280" stroke-width="1.25" stroke-dasharray="5 4" marker-end="url(#arrowGray)"/>
+  <text x="750" y="675" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#6b7280">source_records.business_id (FK)</text>
+
+  <!-- ================= Caption ================= -->
+  <g font-family="Arial, Helvetica, sans-serif" fill="#374151">
+    <text x="40" y="715" font-size="12">Three sources normalize into one shared record shape, always logged to source_records for provenance, then matched</text>
+    <text x="40" y="733" font-size="12">against existing Business rows — exact license_number first, name trigram + proximity as a fallback — before insert/update.</text>
+  </g>
+</svg>
