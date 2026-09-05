@@ -63,17 +63,23 @@ def load_record(conn, record):
 def main():
     conn = get_connection()
     raw_records = fetch_oregon_licenses()
+    total = len(raw_records)
+    failures = []
 
-    kaleafa_raw = None
-    for raw in raw_records:
-        if raw.get("business_name") == "Kaleafa":
-            kaleafa_raw = raw
-            break
-    normalized = normalize_oregon_record(kaleafa_raw)
-    business_id = load_record(conn, normalized)
-    print("Loaded Business id:", business_id)
+    for i, raw in enumerate(raw_records, start=1):
+        try:
+            normalized = normalize_oregon_record(raw)
+            business_id = load_record(conn, normalized)
+            print(f"{i}/{total} loaded {normalized['name']} -> Business id {business_id}")
+        except Exception as e:
+            print(f"[{i}/{total}] FAILED: {raw.get('business_name')} - {e}")
+            failures.append((raw.get("business_name"), str(e)))
 
     conn.close()
+
+    print(f"\nDone: {total - len(failures)} loaded, {len(failures)} failed")
+    for name, error in failures:
+        print(f" - {name}: {error}")
 
 if __name__ == "__main__":
         main()
