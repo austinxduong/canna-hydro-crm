@@ -26,3 +26,12 @@ def normalize_oregon_record(raw):
         "source": "oregon_olcc",
         "source_record_id": raw.get("license_number")
     }
+
+if __name__ == "__main__":
+    print("Fetching Oregon licenses...")
+    records = fetch_oregon_licenses()
+    print(f"Fetched {len(records)} records. Normalizing first 3 examples:")
+
+    for raw in records[:3]:
+        normalized = normalize_oregon_record(raw)
+        print(normalized)
