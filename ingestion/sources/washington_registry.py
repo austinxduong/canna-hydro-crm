@@ -30,7 +30,7 @@ def fetch_washington_licenses():
 
 
 def normalize_washington_record(raw):
-    street = (raw.get("Street Address") or raw.get("Location Address"))
+    street = raw.get("Street Address") or raw.get("Location Address")
     if street:
         street = street.strip()
 
