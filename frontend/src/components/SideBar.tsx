@@ -38,11 +38,11 @@ const SideBar = () => {
     const selectedCategories = searchParams.getAll('category')
     const selectedPipeline_Stage = searchParams.getAll('pipeline_stage')
 
-    const licenseStatus = searchParams.get('status') || 'Active';
+    const licenseStatus = searchParams.get('status') || 'ALL';
     const driveTime = searchParams.get('driveTime') || '5'
 
   return (
-    <div className="w-70 border-r border-gray-300 p-5">
+    <div className="w-73 border-r border-gray-300 p-5">
         <div className="text-xs font-bold text-gray-500">CATEGORY</div>
             <div className="flex flex-col">
             {CATEGORIES.map((category) => (
@@ -78,6 +78,7 @@ const SideBar = () => {
                 onChange={(e) => handleSingleParamChange('status', e.target.value)}
                 className="p-1 m-2 border border-gray-400 rounded-[5px] bg-gray-50"
             >
+                <option>ALL</option>
                 <option>Active</option>
                 <option>Pending</option>
                 <option>Expired</option>
@@ -89,6 +90,7 @@ const SideBar = () => {
                 type="range" 
                 min="5" 
                 max="30" 
+                value={driveTime}
                 className="w-47"
                 onChange={(e) => handleSingleParamChange('driveTime', e.target.value)}
                 />
