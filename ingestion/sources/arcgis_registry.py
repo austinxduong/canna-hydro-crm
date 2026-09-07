@@ -35,8 +35,6 @@ def search_arcgis(lat: float, lng: float, search_term: str) -> dict:
 
     api_key: str | None = os.getenv("ARCGIS_API_KEY")
 
-    print("API key loaded:", api_key is not None)
-
     params: dict = {
         "x": lng,
         "y": lat,
@@ -46,16 +44,11 @@ def search_arcgis(lat: float, lng: float, search_term: str) -> dict:
         "token": api_key
     }
 
-    print("type", type(params))
-
     response: requests.Response = requests.get(url, params=params)
 
     response.raise_for_status()
 
-    print("RESPONSE", response)
     data = response.json()
-    print("response.json() returns a: ",type(data))
-    print(data)
 
     return data
 
@@ -73,8 +66,6 @@ def search_tile(lat: float, lng: float) -> list[dict]:
 
         place_id: str = place["placeId"]
         results_by_id[place_id] = place
-
-        print("this is the place element in the dict", place)
 
     return list(results_by_id.values())
 
@@ -136,20 +127,21 @@ def normalized_arcgis_record(record: dict) -> dict:
     return normalized
 
 
-def process_arcgis_registry(
+def fetch_arcgis_places(
     min_lat: float,
     max_lat: float,
     min_lng: float,
     max_lng: float,
-    conn,
-):
-
+) -> list[dict]:
+    
     centers: list[tuple[float, float]] = generate_tile_centers(
         min_lat,
         max_lat,
         min_lng,
         max_lng
     )
+
+    all_places: list[dict] = []
 
     for lat, lng in centers:
         try:
@@ -162,17 +154,15 @@ def process_arcgis_registry(
 
             enriched_places: list[dict] = enrich_places(filtered_places)
 
-            for place in enriched_places:
-                normalized = normalized_arcgis_record(place)
-
-                load_record(conn, normalized)
+            all_places.extend(enriched_places)
 
         except Exception as e:
-            conn.rollback()
 
             print(f"Failed tile ({lat}, {lng}): {e}")
 
             continue
+
+    return all_places
 
 def test_arcgis_database():
 
@@ -198,6 +188,7 @@ def test_arcgis_database():
     conn.close()
 
 if __name__ == "__main__":
+    pass
     # results = search_arcgis(
     #     lat=45.5152,
     #     lng=-122.6784,
@@ -284,10 +275,10 @@ if __name__ == "__main__":
     #         print("SOURCE RECORD:", record)
     # check_source_record(1232)
 
-    process_arcgis_registry(
-        min_lat=45.4,
-        max_lat=45.6,
-        min_lng=-122.8,
-        max_lng=-122.5,
-        conn=get_connection()
-    )
+    # fetch_arcgis_places(
+    #     min_lat=45.4,
+    #     max_lat=45.6,
+    #     min_lng=-122.8,
+    #     max_lng=-121.5,
+    #     conn=get_connection()
+    #

@@ -3,7 +3,7 @@ from loader import load_record
 
 from sources.oregon_registry import fetch_oregon_licenses, normalize_oregon_record
 from sources.washington_registry import fetch_washington_licenses, normalize_washington_record
-from sources.arcgis_registry import process_arcgis_registry
+from sources.arcgis_registry import fetch_arcgis_places, normalized_arcgis_record
 
 
 # def test_normalization():
@@ -63,17 +63,17 @@ def main():
     process_records(wa_flat_list, normalize_washington_record, "Washington", conn, failures)
     process_records(oregon_records, normalize_oregon_record, "Oregon", conn, failures)
 
-    process_arcgis_registry(
-        min_lat=45.0,
-        max_lat=45.3,
-        min_lng=-122.0,
-        max_lng=-121.7,
-        conn=conn
+    arcgis_places = fetch_arcgis_places(
+        min_lat=45.4,
+        max_lat=45.6,
+        min_lng=-122.8,
+        max_lng=-121.5,
     )
+    process_records(arcgis_places, normalized_arcgis_record, "ArcGIS", conn, failures)
 
     conn.close()
 
-    total_records = len(wa_flat_list) +len(oregon_records)
+    total_records = len(wa_flat_list) +len(oregon_records) +len(arcgis_places)
     print(f"\nDone: {total_records - len(failures)} loaded, {len(failures)} failed")
     for name, error in failures:
         print(f" - {name} : {error}")
