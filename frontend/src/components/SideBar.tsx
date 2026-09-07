@@ -24,11 +24,25 @@ const SideBar = () => {
         })
     }
 
+    const handleSingleParamChange = (key: string, value: string) => {
+        setSearchParams((prev) => {
+            if (value) {
+                prev.set(key, value)
+            } else {
+                prev.delete(key);
+            }
+            return prev
+        })
+    }
+
     const selectedCategories = searchParams.getAll('category')
     const selectedPipeline_Stage = searchParams.getAll('pipeline_stage')
 
+    const licenseStatus = searchParams.get('status') || 'Active';
+    const driveTime = searchParams.get('driveTime') || '5'
+
   return (
-    <div className="w-64 border-r border-gray-300 p-5">
+    <div className="w-70 border-r border-gray-300 p-5">
         <div className="text-xs font-bold text-gray-500">CATEGORY</div>
             <div className="flex flex-col">
             {CATEGORIES.map((category) => (
@@ -59,15 +73,25 @@ const SideBar = () => {
             </div>
         <div>
             <div className="text-xs font-bold text-gray-500 pt-5">LICENSE STATUS</div>
-            <select className="p-1 m-2 border border-gray-400 rounded-[5px] bg-gray-50">
+            <select
+                value={licenseStatus}
+                onChange={(e) => handleSingleParamChange('status', e.target.value)}
+                className="p-1 m-2 border border-gray-400 rounded-[5px] bg-gray-50"
+            >
                 <option>Active</option>
                 <option>Pending</option>
                 <option>Expired</option>
             </select>
         </div>
         <div className="flex flex-col">
-            <div className="text-xs font-bold text-gray-500 pt-5">DRIVE TIME FROM HOME BASE</div>
-                <input type="range" min="5" max="30" className="w-47"/>
+            <div className="text-xs font-bold text-gray-500 pt-5">DRIVE TIME FROM HOME BASE: ({driveTime}) min</div>
+                <input 
+                type="range" 
+                min="5" 
+                max="30" 
+                className="w-47"
+                onChange={(e) => handleSingleParamChange('driveTime', e.target.value)}
+                />
                 <div className="inline-flex text-sm gap-27 ">
                     <p>5 min</p><p>30 min</p> </div>
         </div>
