@@ -120,8 +120,6 @@ def enrich_places(places: list[dict]) -> list[dict]:
 
         enriched_places.append(place)
 
-    print('ENRICHED PLACES', enriched_places[0])
-
     return enriched_places
 
 def normalized_arcgis_record(record: dict) -> dict:
@@ -157,19 +155,27 @@ def process_arcgis_registry(
     )
 
     for lat, lng in centers:
-        places: list[dict] = search_tile(
-            lat=lat,
-            lng=lng,
-        )
+        try:
+            places: list[dict] = search_tile(
+                lat=lat,
+                lng=lng,
+            )
 
-        filtered_places: list[dict] = filter_places(places)
+            filtered_places: list[dict] = filter_places(places)
 
-        enriched_places: list[dict] = enrich_places(filtered_places)
+            enriched_places: list[dict] = enrich_places(filtered_places)
 
-        for place in enriched_places:
-            normalized = normalized_arcgis_record(place)
+            for place in enriched_places:
+                normalized = normalized_arcgis_record(place)
 
-            load_record(conn, normalized)
+                load_record(conn, normalized)
+
+        except Exception as e:
+            conn.rollback()
+
+            print(f"Failed tile ({lat}, {lng}): {e}")
+
+            continue
 
 def test_arcgis_database():
 
@@ -241,43 +247,50 @@ if __name__ == "__main__":
 
     test_arcgis_database()
 
-def check_business(business_id: int):
+    def check_business(business_id: int):
 
-    conn = get_connection()
+        conn = get_connection()
 
-    with conn.cursor() as cur:
-        cur.execute(
-            'SELECT id, name, address, license_number FROM "Business" WHERE id = %s',
-            (business_id,)
-        )
+        with conn.cursor() as cur:
+            cur.execute(
+                'SELECT id, name, address, license_number FROM "Business" WHERE id = %s',
+                (business_id,)
+            )
 
-        business = cur.fetchone()
+            business = cur.fetchone()
 
-    conn.close()
+        conn.close()
 
-    print("BUSINESS:", business)
+        print("BUSINESS:", business)
 
-check_business(1232)
+    check_business(1232)
 
-def check_source_record(business_id: int):
+    def check_source_record(business_id: int):
 
-    conn = get_connection()
+        conn = get_connection()
 
-    with conn.cursor() as cur:
-        cur.execute(
-            """
-            SELECT id, business_id, source, source_record_id, raw_name, raw_address
-            FROM source_records
-            WHERE business_id = %s
-            """,
-            (business_id,)
-        )
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT id, business_id, source, source_record_id, raw_name, raw_address
+                FROM source_records
+                WHERE business_id = %s
+                """,
+                (business_id,)
+            )
 
-        records = cur.fetchall()
+            records = cur.fetchall()
 
-    conn.close()
+        conn.close()
 
-    for record in records:
-        print("SOURCE RECORD:", record)
-        
-check_source_record(1232)
+        for record in records:
+            print("SOURCE RECORD:", record)
+    check_source_record(1232)
+
+    process_arcgis_registry(
+        min_lat=45.0,
+        max_lat=45.3,
+        min_lng=-122.0,
+        max_lng=-121.7,
+        conn=get_connection()
+    )
