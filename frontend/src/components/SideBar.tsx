@@ -1,12 +1,45 @@
 import React from 'react'
+import { useSearchParams} from 'react-router-dom'
+
+const CATEGORIES = ['Dispensaries', 'Hydroponics'];
 
 const SideBar = () => {
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    const handleCheckboxChange = (key: string, value: string) => {
+        setSearchParams((prev) => {
+            const currentValues = prev.getAll(key);
+            prev.delete(key)
+
+            if (currentValues.includes(value)) {
+                currentValues
+                    .filter((item) => item !== value)
+                    .forEach((item) => prev.append(key, item));
+            } else {
+                [...currentValues, value].forEach((item) => prev.append(key, item))
+            }
+
+            return prev;
+        })
+    }
+
+    const selectedCategories = searchParams.getAll('category')
+
   return (
     <div className="w-64 border-r border-gray-300 p-5">
         <div className="text-xs font-bold text-gray-500">CATEGORY</div>
             <div className="flex flex-col">
-            <label className="inline-flex gap-2"><input type="checkbox"/>Dispensaries</label>
-            <label className="inline-flex gap-2"><input type="checkbox"/>Hydroponics</label>
+            {CATEGORIES.map((category) => (
+                <label key={category} className="inline-flex gap-2 cursor-pointer">
+                    <input
+                        type="checkbox"
+                        value={category}
+                        checked={selectedCategories.includes(category)}
+                        onChange={() => handleCheckboxChange('category', category)}
+                    />
+                    {category}
+                </label>
+            ))}
             </div>
         <div className="text-xs font-bold text-gray-500 pt-5">PIPELINE STAGE</div>
         <div className="flex flex-col">

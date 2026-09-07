@@ -8,8 +8,7 @@
     "build": "tsc --noEmit && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test" : "vitest"
-
+    "test": "vitest"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
@@ -20,6 +19,7 @@
     "lucide-react": "^1.37.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
+    "react-router-dom": "^7.18.3",
     "shadcn": "^4.19.0",
     "tailwind-merge": "^3.6.0",
     "tailwindcss": "^4.3.3",

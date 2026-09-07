@@ -64,10 +64,10 @@ def main():
     process_records(oregon_records, normalize_oregon_record, "Oregon", conn, failures)
 
     arcgis_places = fetch_arcgis_places(
-        min_lat=45.4,
-        max_lat=45.6,
-        min_lng=-122.8,
-        max_lng=-121.5,
+        min_lat=41.99,
+        max_lat=49.00,
+        min_lng=-124.76,
+        max_lng=-116.46,
     )
     process_records(arcgis_places, normalized_arcgis_record, "ArcGIS", conn, failures)
 
