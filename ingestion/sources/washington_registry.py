@@ -56,7 +56,7 @@ def normalize_washington_record(raw):
         "category": "Dispensaries",
         "stage": "New",
         "license_number": raw.get("License") or raw.get("License #"),
-        "license_status": "ACTIVE",
+        "license_status": "Active",
         "source": "WLCB",
         "source_record_id": raw.get("License") or raw.get("License #")
 
