@@ -2,6 +2,7 @@ import React from 'react'
 import { useSearchParams} from 'react-router-dom'
 
 const CATEGORIES = ['Dispensaries', 'Hydroponics'];
+const PIPELINE_STAGES = ['New', 'Contacted', 'Demo Scheduled', 'Customer', 'Lost']
 
 const SideBar = () => {
     const [searchParams, setSearchParams] = useSearchParams();
@@ -24,6 +25,7 @@ const SideBar = () => {
     }
 
     const selectedCategories = searchParams.getAll('category')
+    const selectedPipeline_Stage = searchParams.getAll('pipeline_stage')
 
   return (
     <div className="w-64 border-r border-gray-300 p-5">
@@ -42,13 +44,19 @@ const SideBar = () => {
             ))}
             </div>
         <div className="text-xs font-bold text-gray-500 pt-5">PIPELINE STAGE</div>
-        <div className="flex flex-col">
-            <label className="inline-flex gap-2"><input type="checkbox"/>New</label>
-            <label className="inline-flex gap-2"><input type="checkbox"/>Contacted</label>
-            <label className="inline-flex gap-2"><input type="checkbox"/>Demo Scheduled</label>
-            <label className="inline-flex gap-2"><input type="checkbox"/>Customer</label>
-            <label className="inline-flex gap-2"><input type="checkbox"/>Lost</label>
-        </div>
+            <div className="flex flex-col">
+            {PIPELINE_STAGES.map((pipeline_stage) => (
+                <label key={pipeline_stage} className="inline-flex gap-2 cursor-pointer">
+                    <input
+                        type="checkbox"
+                        value={pipeline_stage}
+                        checked={selectedPipeline_Stage.includes(pipeline_stage)}
+                        onChange={() => handleCheckboxChange('pipeline_stage', pipeline_stage)}
+                    />
+                    {pipeline_stage}
+                </label>
+            ))}
+            </div>
         <div>
             <div className="text-xs font-bold text-gray-500 pt-5">LICENSE STATUS</div>
             <select className="p-1 m-2 border border-gray-400 rounded-[5px] bg-gray-50">
