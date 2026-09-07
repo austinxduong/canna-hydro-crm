@@ -28,8 +28,6 @@ def generate_tile_centers(min_lat: float, max_lat: float, min_lng: float, max_ln
 
         latitude += lat_step
 
-    print("CENTERS", type(centers[0][0]))
-
     return centers
 
 def search_arcgis(lat: float, lng: float, search_term: str) -> dict:
@@ -64,20 +62,19 @@ def search_arcgis(lat: float, lng: float, search_term: str) -> dict:
 def search_tile(lat: float, lng: float) -> list[dict]:
     results_by_id: dict[str, dict] = {}
 
-    for search_term in ["hydroponic", "grow"]:
 
-        response: dict = search_arcgis(
-            lat=lat,
-            lng=lng,
-            search_term= search_term
-        )
+    response: dict = search_arcgis(
+        lat=lat,
+        lng=lng,
+        search_term= "hydroponic"
+    )
 
-        for place in response.get("results", []):
+    for place in response.get("results", []):
 
-            place_id: str = place["placeId"]
-            results_by_id[place_id] = place
+        place_id: str = place["placeId"]
+        results_by_id[place_id] = place
 
-            print("this is the place element in the dict", place)
+        print("this is the place element in the dict", place)
 
     return list(results_by_id.values())
 
@@ -87,7 +84,7 @@ def filter_places(places: list[dict]) -> list[dict]:
     for place in places:
         name: str = place["name"].lower()
 
-        if "hydro" in name or "grow" in name:
+        if "hydro" in name:
             filtered_places.append(place)
 
     return filtered_places
@@ -201,96 +198,96 @@ def test_arcgis_database():
     conn.close()
 
 if __name__ == "__main__":
-    results = search_arcgis(
-        lat=45.5152,
-        lng=-122.6784,
-        search_term="hydroponic"
-    )
+    # results = search_arcgis(
+    #     lat=45.5152,
+    #     lng=-122.6784,
+    #     search_term="hydroponic"
+    # )
 
-    print(results)
+    # print(results)
 
-    centers = generate_tile_centers(
-        min_lat=45.0,
-        max_lat=45.3,
-        min_lng=-122.0,
-        max_lng=-121.7
-    )
+    # centers = generate_tile_centers(
+    #     min_lat=45.0,
+    #     max_lat=45.3,
+    #     min_lng=-122.0,
+    #     max_lng=-121.7
+    # )
 
-    places = search_tile(
-        lat=45.5152,
-        lng=-122.6784,
-    )
+    # places = search_tile(
+    #     lat=45.5152,
+    #     lng=-122.6784,
+    # )
 
-    filtered_places = filter_places(places)
+    # filtered_places = filter_places(places)
 
-    print("Before filtering:", len(places))
-    print("After fitering:", len(filtered_places))
+    # print("Before filtering:", len(places))
+    # print("After fitering:", len(filtered_places))
 
-    for place in filtered_places:
-        print(
-            place["name"],
-            "|",
-            place["placeId"],
-            "|",
-            place["location"]
-            )
+    # for place in filtered_places:
+    #     print(
+    #         place["name"],
+    #         "|",
+    #         place["placeId"],
+    #         "|",
+    #         place["location"]
+    #         )
 
-    enriched_places = enrich_places(filtered_places)
+    # enriched_places = enrich_places(filtered_places)
 
-    for place in enriched_places:
-        print(place)
+    # for place in enriched_places:
+    #     print(place)
 
-        normalized = normalized_arcgis_record(place)
+    #     normalized = normalized_arcgis_record(place)
         
-        print("NORMALIZE", normalized)
-        print("Normalized type is:", type(normalized))
+    #     print("NORMALIZE", normalized)
+    #     print("Normalized type is:", type(normalized))
 
-    test_arcgis_database()
+    # test_arcgis_database()
 
-    def check_business(business_id: int):
+    # def check_business(business_id: int):
 
-        conn = get_connection()
+    #     conn = get_connection()
 
-        with conn.cursor() as cur:
-            cur.execute(
-                'SELECT id, name, address, license_number FROM "Business" WHERE id = %s',
-                (business_id,)
-            )
+    #     with conn.cursor() as cur:
+    #         cur.execute(
+    #             'SELECT id, name, address, license_number FROM "Business" WHERE id = %s',
+    #             (business_id,)
+    #         )
 
-            business = cur.fetchone()
+    #         business = cur.fetchone()
 
-        conn.close()
+    #     conn.close()
 
-        print("BUSINESS:", business)
+    #     print("BUSINESS:", business)
 
-    check_business(1232)
+    # check_business(1232)
 
-    def check_source_record(business_id: int):
+    # def check_source_record(business_id: int):
 
-        conn = get_connection()
+    #     conn = get_connection()
 
-        with conn.cursor() as cur:
-            cur.execute(
-                """
-                SELECT id, business_id, source, source_record_id, raw_name, raw_address
-                FROM source_records
-                WHERE business_id = %s
-                """,
-                (business_id,)
-            )
+    #     with conn.cursor() as cur:
+    #         cur.execute(
+    #             """
+    #             SELECT id, business_id, source, source_record_id, raw_name, raw_address
+    #             FROM source_records
+    #             WHERE business_id = %s
+    #             """,
+    #             (business_id,)
+    #         )
 
-            records = cur.fetchall()
+    #         records = cur.fetchall()
 
-        conn.close()
+    #     conn.close()
 
-        for record in records:
-            print("SOURCE RECORD:", record)
-    check_source_record(1232)
+    #     for record in records:
+    #         print("SOURCE RECORD:", record)
+    # check_source_record(1232)
 
     process_arcgis_registry(
-        min_lat=45.0,
-        max_lat=45.3,
-        min_lng=-122.0,
-        max_lng=-121.7,
+        min_lat=45.4,
+        max_lat=45.6,
+        min_lng=-122.8,
+        max_lng=-122.5,
         conn=get_connection()
     )
