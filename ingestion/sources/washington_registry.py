@@ -54,6 +54,7 @@ def normalize_washington_record(raw):
         "lat": lat,
         "lng": lng,
         "category": "Dispensaries",
+        "stage": "New",
         "license_number": raw.get("License") or raw.get("License #"),
         "license_status": "ACTIVE",
         "source": "WLCB",

@@ -21,6 +21,7 @@ def normalize_oregon_record(raw):
         "lat": lat,
         "lng": lng,
         "category": "Dispensaries",
+        "stage": "New",
         "license_number": raw.get("license_number"),
         "license_status": "ACTIVE",
         "source": "oregon_olcc",
