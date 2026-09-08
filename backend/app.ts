@@ -33,7 +33,12 @@ app.get('/health', (req: Request, res: Response) => {
 // route handler for the second test
 app.get('/businesses', async (req: Request, res: Response) => {
     try {
-        const result = await pool.query('SELECT * FROM "Business"')
+        const result = await pool.query(`
+            SELECT id, name, address, phone, category, license_status, license_number,
+                stage, assigned_rep, last_activity_at,
+                ST_X(location::geometry) AS lng, ST_Y(location::geometry) AS lat
+            FROM "Business"
+        `)
         res.json(result.rows);
     } catch (error) {
         res.status(500).send('Something went wrong')
