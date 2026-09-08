@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const express = require('express');
 const app = express();
-const pool = require('./db/Pool.ts');
+const pool = require('./db/Pool');
 const cors = require('cors');
 const { rateLimit } = require('express-rate-limit');
 app.use(express.json());
