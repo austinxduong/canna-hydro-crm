@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const express = require('express');
 const app = express();
-const pool = require('./db/Pool');
+const pool = require('./db/Pool.ts');
 const cors = require('cors');
 const { rateLimit } = require('express-rate-limit');
 app.use(express.json());
@@ -28,7 +28,12 @@ app.get('/health', (req, res) => {
 // route handler for the second test
 app.get('/businesses', async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM "Business"');
+        const result = await pool.query(`
+            SELECT id, name, address, phone, category, license_status, license_number,
+                stage, assigned_rep, last_activity_at,
+                ST_X(location::geometry) AS lng, ST_Y(location::geometry) AS lat
+            FROM "Business"
+        `);
         res.json(result.rows);
     }
     catch (error) {
