@@ -14,7 +14,9 @@ const Layout = () => {
         <Header/>
           <div className="flex">
           <SideBar />
-          <div className="flex-1"><Outlet /></div>
+            <div className="flex-1">
+    <Outlet />
+  </div>
           </div>
       </div>
       <div className="flex justify-center text-sm font-bold text-gray-400 mt-4"><p>Clicking a row opens the same lead detail panel used in Map View. Checkboxes support bulk actions like reassigning a batch of leads to a rep.</p></div>

@@ -11,6 +11,7 @@
     "test": "vitest"
   },
   "dependencies": {
+    "@arcgis/core": "^5.1.22",
     "@base-ui/react": "^1.7.0",
     "@fontsource-variable/geist": "^5.3.0",
     "@tailwindcss/vite": "^4.3.3",

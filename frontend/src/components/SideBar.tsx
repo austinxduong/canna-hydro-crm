@@ -42,7 +42,7 @@ const SideBar = () => {
     const driveTime = searchParams.get('driveTime') || '5'
 
   return (
-    <div className="w-73 border-r border-gray-300 p-5">
+    <div className="w-72 shrink-0 border-r border-gray-300 p-5">
         <div className="text-xs font-bold text-gray-500">CATEGORY</div>
             <div className="flex flex-col">
             {CATEGORIES.map((category) => (
