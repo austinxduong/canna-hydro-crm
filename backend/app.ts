@@ -30,15 +30,12 @@ app.get('/health', (req: Request, res: Response) => {
     res.send('hello world')
 });
 
+const BUSINESS_COLUMNS = `id, name, address, phone, category, license_status, license_number, stage, assigned_rep, last_activity_at, ST_X(location::geometry) AS lng, ST_Y(location::geometry) AS lat`
+
 // route handler for the second test
 app.get('/businesses', async (req: Request, res: Response) => {
     try {
-        const result = await pool.query(`
-            SELECT id, name, address, phone, category, license_status, license_number,
-                stage, assigned_rep, last_activity_at,
-                ST_X(location::geometry) AS lng, ST_Y(location::geometry) AS lat
-            FROM "Business"
-        `)
+        const result = await pool.query(`SELECT ${BUSINESS_COLUMNS} FROM "Business"`)
         res.json(result.rows);
     } catch (error) {
         res.status(500).send('Something went wrong')
@@ -61,7 +58,11 @@ app.post('/businesses', limiter, async (req: Request, res: Response) => {
 
 app.get('/businesses/:id', async (req: Request, res: Response) =>{
     try {
-        const result = await pool.query('SELECT * FROM "Business" WHERE id = $1', [req.params.id])
+        const result = await pool.query(`
+            SELECT ${BUSINESS_COLUMNS} FROM "Business"
+            WHERE id = $1`, 
+            [req.params.id]
+            )
     if (result.rows.length === 0) {
         return res.status(404).json({message: "Item not found"})
         }
