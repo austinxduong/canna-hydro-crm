@@ -114,4 +114,17 @@ app.delete('/businesses/:id', limiter, async (req: Request, res: Response) => {
     }
 })
 
+app.get('/businesses/:id/activity', async (req: Request, res: Response) => {
+    try {
+        const existingBusiness = await pool.query('SELECT id FROM "Business" WHERE id = $1', [req.params.id])
+        if (existingBusiness.rows.length === 0) {
+        return res.status(404).json({message: "Business not found"})
+        }
+        const existingActivity = await pool.query('SELECT * FROM "activity_log" WHERE business_id = $1 ORDER BY created_at DESC', [req.params.id])
+        res.status(200).json(existingActivity.rows)
+    } catch (error){
+        res.status(500).send('Something went wrong')
+    }
+})
+
 module.exports = app;
