@@ -29,7 +29,7 @@ const MapView_ = () => {
         })
 
         const map = new Map({
-            basemap: 'streets-navigation-vector'
+            basemap: 'arcgis/navigation-night'
         })
 
         map.add(graphicsLayer)
