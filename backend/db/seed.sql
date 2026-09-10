@@ -8,3 +8,8 @@ VALUES
 ('Blue River Grow Supply', '515 Main St, Boulder, CO 80302', '303-555-0187', ST_SetSRID(ST_MakePoint(-105.2711, 40.0176), 4326)::geography, 'Hydroponics', 'Expired', NULL, 'Lost', '2026-06-30 13:00:00'),
 ('Northgate Dispensary', '778 N Interstate Ave, Portland, OR 97227', '503-555-0141', ST_SetSRID(ST_MakePoint(-122.6764, 45.5548), 4326)::geography, 'Dispensary', 'Active', 'OR-DISP-33017', 'Customer', '2026-08-27 10:10:00'),
 ('Ann Arbor Aquaponics', '1550 Eisenhower Pkwy, Ann Arbor, MI 48108', '734-555-0155', ST_SetSRID(ST_MakePoint(-83.7280, 42.2496), 4326)::geography, 'Hydroponics', 'Active', NULL, 'Contacted', '2026-08-18 15:30:00');
+
+INSERT INTO "Users" (name, email, status, role) VALUES
+  ('Austin X. Duong', 'austiiduo@gmail.com', 'active', 'owner'),
+  ('Jordan Lee', 'jordan.lee@example.com', 'active', 'sales_rep'),
+  ('Morgan Rivera', 'morgan.rivera@example.com', 'active', 'sales_rep');

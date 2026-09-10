@@ -143,4 +143,13 @@ app.post('/businesses/:id/activity', async (req: Request, res: Response) => {
     }
 })
 
+app.get('/users', async (req: Request, res: Response) => {
+    try {
+        const users = await pool.query('SELECT id, name, role FROM "Users" WHERE status = $1 ORDER BY name ASC',['active'])
+        res.json(users.rows)
+    } catch (err) {
+        res.status(500).send('Something went wrong')
+    }
+})
+
 module.exports = app;
