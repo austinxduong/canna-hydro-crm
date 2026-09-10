@@ -127,4 +127,20 @@ app.get('/businesses/:id/activity', async (req: Request, res: Response) => {
     }
 })
 
+app.post('/businesses/:id/activity', async (req: Request, res: Response) => {
+    try {
+        if (!req.body.note) {
+            return res.status(400).json({message: "fields cannot be empty"})
+        }
+        const existingBusiness = await pool.query('SELECT id FROM "Business" WHERE id = $1', [req.params.id])
+        if (existingBusiness.rows.length === 0) {
+        return res.status(404).json({message: "Business not found"})
+        }
+        const existingActivity = await pool.query('INSERT into "activity_log" (business_id, activity_type, note, created_at) VALUES ($1, $2, $3, NOW()) RETURNING *', [req.params.id, 'note', req.body.note])
+        res.status(201).json(existingActivity.rows[0])
+    } catch (err) {
+        res.status(500).send('Sometihng went wrong')
+    }
+})
+
 module.exports = app;
