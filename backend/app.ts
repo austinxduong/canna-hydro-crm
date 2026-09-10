@@ -59,7 +59,14 @@ app.post('/businesses', limiter, async (req: Request, res: Response) => {
 app.get('/businesses/:id', async (req: Request, res: Response) =>{
     try {
         const result = await pool.query(`
-            SELECT ${BUSINESS_COLUMNS} FROM "Business"
+            SELECT
+                ${BUSINESS_COLUMNS},
+                (
+                    SELECT STRING_AGG(source_records.source, ', ')
+                    FROM source_records
+                    WHERE source_records.business_id = "Business".id
+                )   AS sources
+            FROM "Business"
             WHERE id = $1`, 
             [req.params.id]
             )
