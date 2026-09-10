@@ -62,7 +62,7 @@ app.get('/businesses/:id', async (req: Request, res: Response) =>{
             SELECT
                 ${BUSINESS_COLUMNS},
                 (
-                    SELECT STRING_AGG(source_records.source, ', ')
+                    SELECT STRING_AGG(DISTINCT source_records.source, ', ')
                     FROM source_records
                     WHERE source_records.business_id = "Business".id
                 )   AS sources
