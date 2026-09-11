@@ -10,6 +10,7 @@ import { useFilteredBusinesses } from '@/hooks/useFilteredBusinesses'
 import Point from '@arcgis/core/geometry/Point'
 import SimpleMarkerSymbol from '@arcgis/core/symbols/SimpleMarkerSymbol'
 import type { GraphicHit } from "@arcgis/core/views/types";
+import { useBusinessDetail } from '@/hooks/useBusinessDetail'
 
 esriConfig.apiKey = import.meta.env.VITE_ARCGIS_API_KEY
 console.log(
