@@ -1,4 +1,5 @@
 import { useRef, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import Map from '@arcgis/core/Map'
 import MapView from '@arcgis/core/views/MapView'
 import GraphicsLayer from '@arcgis/core/layers/GraphicsLayer'
@@ -8,6 +9,7 @@ import '@arcgis/core/assets/esri/themes/light/main.css'
 import { useFilteredBusinesses } from '@/hooks/useFilteredBusinesses'
 import Point from '@arcgis/core/geometry/Point'
 import SimpleMarkerSymbol from '@arcgis/core/symbols/SimpleMarkerSymbol'
+import type { GraphicHit } from "@arcgis/core/views/types";
 
 esriConfig.apiKey = import.meta.env.VITE_ARCGIS_API_KEY
 console.log(
@@ -19,6 +21,8 @@ const MapView_ = () => {
     const mapDivRef = useRef<HTMLDivElement>(null)
     const viewRef = useRef<MapView | null>(null)
     const graphicsLayerRef = useRef<GraphicsLayer | null>(null)
+
+    const [searchParams, setSearchParams] = useSearchParams();
 
     // Effect 1: create the Map + MapView ONCE on mount, destroy on unmount
 
@@ -51,12 +55,37 @@ const MapView_ = () => {
             zoom: 6
         })
 
+
         graphicsLayerRef.current = graphicsLayer
         viewRef.current = view
 
         view.when(() => {
         view.container = mapDivRef.current!
         })
+
+        const isGraphicHit = (hit: any): hit is GraphicHit => {
+            return hit?.type === "graphic"
+        }
+
+        view.on('click', (function(event) {
+            view.hitTest(event).then(function(response) {
+                const newParams = new URLSearchParams(searchParams)
+
+                const matchedHit = response.results.find((result): result is GraphicHit => {
+                    return isGraphicHit(result) && result.graphic.layer === graphicsLayerRef.current 
+                })
+                
+                const targetBusinessId = matchedHit?.graphic?.attributes["businessId"]
+
+                if (targetBusinessId) {
+                    newParams.set("businessId", targetBusinessId);
+                } else {
+                    newParams.delete("businessId")
+                }
+                setSearchParams(newParams)
+            })
+        }))
+
 
         console.log('Map size:', view.size)
         
@@ -99,6 +128,9 @@ const MapView_ = () => {
             const graphic = new Graphic({
                 geometry: point,
                 symbol: symbol,
+                attributes: {
+                    businessId: business.id, 
+                }
             })
 
             return [graphic]
