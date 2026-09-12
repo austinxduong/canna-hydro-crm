@@ -30,12 +30,12 @@ const BusinessDetailPanel = ({ id }: { id: number }) => {
 
   return (
     <div>
-        {data.name}
-        <div>{data.address}</div>
-        <div>{data.category} License:{data.license_status}</div>
-        <div>{data.stage}</div>
-        <div>Rep: {data.assigned_rep || 'Unassigned'}</div>
-        <div>Source: {data.sources} </div>
+        <div className="font-bold text-xl">{data.name}</div>
+        <div className="text-sm text-gray-500 pb-3">{data.address}</div>
+        <div className="pb-3 flex gap-2"><div className="text-gray-500 rounded-full border border-gray-300 inline-flex items-center px-2">{data.category}</div><div className="inline-flex items-center px-2 text-gray-500 rounded-full border border-gray-300">License:{data.license_status}</div></div>
+        <div className=" text-gray-500">Pipeline Stage: {data.stage}</div>
+        <div className=" text-gray-500">Rep: {data.assigned_rep || 'Unassigned'}</div>
+        <div className="font-bold text-green-600">Source: {data.sources} </div>
 
         {activityLoading &&  <Spinner/>}
         {activityError && <div>Something went wrong: {activityError}</div>}
