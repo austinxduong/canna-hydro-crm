@@ -10,7 +10,7 @@ import { useFilteredBusinesses } from '@/hooks/useFilteredBusinesses'
 import Point from '@arcgis/core/geometry/Point'
 import SimpleMarkerSymbol from '@arcgis/core/symbols/SimpleMarkerSymbol'
 import type { GraphicHit } from "@arcgis/core/views/types";
-import { useBusinessDetail } from '@/hooks/useBusinessDetail'
+import BusinessDetailPanel from './BusinessDetailPanel'
 
 esriConfig.apiKey = import.meta.env.VITE_ARCGIS_API_KEY
 console.log(
@@ -24,6 +24,9 @@ const MapView_ = () => {
     const graphicsLayerRef = useRef<GraphicsLayer | null>(null)
 
     const [searchParams, setSearchParams] = useSearchParams();
+
+    const businessIdParam = searchParams.get('businessId')
+    const selectedBusinessId = businessIdParam ? Number(businessIdParam) : null
 
     // Effect 1: create the Map + MapView ONCE on mount, destroy on unmount
 
@@ -140,7 +143,12 @@ const MapView_ = () => {
 
     }, [data])
 
-    return <div ref={mapDivRef} style={{ height: '100%', width: '100%', position: 'relative' }} />
+    return (
+        <div ref={mapDivRef} style={{ height: '100%', width: '100%', position: 'relative' }} > 
+            {selectedBusinessId && <BusinessDetailPanel id={selectedBusinessId}/>}
+        </div>
+    )
+
 }
 
 export default MapView_
