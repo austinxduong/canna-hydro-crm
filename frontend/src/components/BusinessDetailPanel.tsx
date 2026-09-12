@@ -1,8 +1,11 @@
 import { useBusinessDetail } from '@/hooks/useBusinessDetail'
 import { Ring } from '@/components/loading-ui/ring'
+import { useBusinessActivity } from '@/hooks/useBusinessActivity'
+import { Spinner } from "@/components/ui/spinner"
 
 const BusinessDetailPanel = ({ id }: { id: number }) => {
     const { data, loading, error } = useBusinessDetail(id)
+    const { data: activity, loading: activityLoading, error: activityError} = useBusinessActivity(id)
 
     if (loading) {
         return (
@@ -23,6 +26,7 @@ const BusinessDetailPanel = ({ id }: { id: number }) => {
     if (!data) {
         return null;
     }
+    
 
   return (
     <div>
@@ -32,6 +36,14 @@ const BusinessDetailPanel = ({ id }: { id: number }) => {
         <div>{data.stage}</div>
         <div>Rep: {data.assigned_rep || 'Unassigned'}</div>
         <div>Source: {data.sources} </div>
+
+        {activityLoading &&  <Spinner/>}
+        {activityError && <div>Something went wrong: {activityError}</div>}
+        {!activityLoading && !activityError && (
+            <div>{activity.map((details) => (
+                <div key={details.id}>Note: {details.note} {details.created_at}</div>
+            ))}</div>
+        )}
     </div>
   )
 }
