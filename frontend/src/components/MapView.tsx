@@ -145,7 +145,7 @@ const MapView_ = () => {
 
     return (
         <div ref={mapDivRef} style={{ height: '100%', width: '100%', position: 'relative' }} > 
-            <div className="p-5">{selectedBusinessId && <BusinessDetailPanel id={selectedBusinessId}/>}</div>
+            <div className="absolute top-4 right-4 z-10 w-90 md:w- max-h-[calc(100%-2rem)] bg-white rounded-lg overflow-y-auto p-5">{selectedBusinessId && <BusinessDetailPanel id={selectedBusinessId}/>}</div>
         </div>
     )
 

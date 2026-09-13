@@ -11,7 +11,7 @@ function App() {
       <Route path="/" element={<Layout />}>
         <Route index element={<Navigate to="/list" replace/>} />
         <Route path="list" element={<BusinessList />} />
-        <Route path="map" element={<div className ="h-[600px] 2xl:h-[1000px] max-h-[75vh]"><MapView /></div>} />
+        <Route path="map" element={<div className ="h-150 2xl:h-250 max-h-[75vh]"><MapView /></div>} />
       </Route>
     </Routes>
   )
