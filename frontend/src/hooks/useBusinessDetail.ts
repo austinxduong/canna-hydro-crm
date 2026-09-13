@@ -41,6 +41,7 @@ export function useBusinessDetail(id: number | null) {
     return {
         data,
         loading,
-        error
+        error,
+        setData,
     }
 }

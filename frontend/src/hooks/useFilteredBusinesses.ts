@@ -10,7 +10,7 @@ export interface Business {
     license_status: string
     license_number: string
     stage: string
-    assigned_rep: string | null
+    assigned_rep: number | null
     last_activity_at: string | null
     lat: number | null
     lng: number | null
