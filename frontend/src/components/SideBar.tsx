@@ -1,8 +1,6 @@
 import React from 'react'
 import { useSearchParams} from 'react-router-dom'
-
-const CATEGORIES = ['Dispensaries', 'Hydroponics'];
-const PIPELINE_STAGES = ['New', 'Contacted', 'Demo Scheduled', 'Customer', 'Lost']
+import { PIPELINE_STAGES, CATEGORIES } from '@/lib/constants';
 
 const SideBar = () => {
     const [searchParams, setSearchParams] = useSearchParams();
