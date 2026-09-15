@@ -4,16 +4,16 @@ import { useBusinessActivity } from '@/hooks/useBusinessActivity'
 import { Spinner } from "@/components/ui/spinner"
 import { useUsers } from '@/hooks/useUsers'
 import { useState } from 'react'
-import { PIPELINE_STAGES } from '@/lib/constants'
-
-const SERVER_URL = 'https://canna-hydro-crm.onrender.com/businesses/'
+import { PIPELINE_STAGES, SERVER_URL } from '@/lib/constants'
 
 const BusinessDetailPanel = ({ id }: { id: number }) => {
     const { data, loading, error, setData } = useBusinessDetail(id)
-    const { data: activity, loading: activityLoading, error: activityError} = useBusinessActivity(id)
+    const { data: activity, loading: activityLoading, error: activityError, setData : setActivity } = useBusinessActivity(id)
     const { data: users, loading: usersLoading, error: usersError} = useUsers()
     const [ repChangeError, setRepChangeError ] = useState<string | null>()
     const [ stageChangeError, setStageChangeError] = useState<string | null>()
+    const [ inputText, setInputText ] = useState('')
+    const [ noteChangeError, setNoteChangeError] = useState<string | null>()
 
     if (loading) {
         return (
@@ -87,6 +87,30 @@ const BusinessDetailPanel = ({ id }: { id: number }) => {
             setStageChangeError(err instanceof Error ? err.message : String(err))
         }
     }
+
+    async function handleAddNote () {
+        if (!inputText) {
+            setNoteChangeError("fields cannot be empty")
+            return;
+        }
+        try {
+            const response = await fetch(`${SERVER_URL}${id}/activity`, {
+                method: 'POST',
+                headers: {'Content-Type' : 'application/json'},
+                body: JSON.stringify({
+                    note: inputText
+                })
+            })
+            if(!response.ok) {
+                throw new Error(`Failed to post new note (Status ${response.status})`)
+            }
+            const json = await response.json()
+            setActivity([json, ...activity])
+            setInputText('')
+        } catch (err) {
+            setNoteChangeError(err instanceof Error ? err.message : String(err))
+        }
+    }
     
   return (
     <div>
@@ -127,12 +151,30 @@ const BusinessDetailPanel = ({ id }: { id: number }) => {
         </div>
 
         <div className="font-bold text-green-600">Source: {data.sources} </div>
+        <div className="text-gray-500 mb-3 mt-1">Note: 
+            {noteChangeError && <div>Something went wrong: {noteChangeError}</div>}
+            <form onSubmit={(e) => {e.preventDefault(); handleAddNote()}}>
+                <input
+                    type="text"
+                    placeholder="memo here"
+                    className="w-full p-2 border border-gray-300 rounded-[5px] bg-gray-50 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 mt-2 mb-2"
+                    value={inputText}
+                    onChange={(e) => setInputText(e.target.value)}
+                    />
+                <button
+                    type="submit"
+                    className="px-4 py-2 bg-purple-600 text-white text-sm rounded-[5px] hover:bg-purple-700 transition-colors"
+                >
+                    Add
+                </button>
+            </form>
+        </div>
 
         {activityLoading &&  <Spinner/>}
         {activityError && <div>Something went wrong: {activityError}</div>}
         {!activityLoading && !activityError && (
             <div>{activity.map((details) => (
-                <div key={details.id}>Note: {details.note} {details.created_at}</div>
+                <div className="m-2 p-1 border-b border-gray-300 text-gray-500" key={details.id}>{details.note} — {new Date(details.created_at).toLocaleString('en-US', {month: 'short', day: 'numeric', year: 'numeric', hour:'numeric', minute: 'numeric'})}</div>
             ))}</div>
         )}
     </div>

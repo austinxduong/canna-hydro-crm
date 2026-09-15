@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { SERVER_URL } from '@/lib/constants'
 
 export interface Business {
     id: number
@@ -15,8 +16,6 @@ export interface Business {
     lat: number | null
     lng: number | null
 }
-
-const SERVER_URL = 'https://canna-hydro-crm.onrender.com/businesses'
 
 export function useFilteredBusinesses() {
     const [data, setData] = useState<Business[]>([]);

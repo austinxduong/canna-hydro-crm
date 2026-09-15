@@ -1,11 +1,10 @@
 import { useState, useEffect } from "react";
 import type { Business } from '@/hooks/useFilteredBusinesses'
+import { SERVER_URL } from "@/lib/constants";
 
 interface BusinessDetail extends Business {
     sources: string | null
 }
-
-const SERVER_URL = 'https://canna-hydro-crm.onrender.com/businesses/'
 
 export function useBusinessDetail(id: number | null) {
     const [data, setData] = useState<BusinessDetail | null>()

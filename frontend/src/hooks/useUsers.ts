@@ -1,13 +1,11 @@
 import React, {useState, useEffect} from 'react'
+import { USERS_URL } from '@/lib/constants'
 
 interface Users {
     id: number
     name: string
     role: string
 }
-
-const SERVER_URL = 'https://canna-hydro-crm.onrender.com/users'
-
 
 export const useUsers = () => {
 const [data, setData] = useState<Users[]>([])
@@ -20,7 +18,7 @@ useEffect(() => {
         setLoading(true)
 
         try {
-            const response = await fetch(SERVER_URL)
+            const response = await fetch(USERS_URL)
             if (!response.ok) {
                 throw new Error(`Failed to load users (Status ${response.status})`)
             }

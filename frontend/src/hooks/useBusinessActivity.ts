@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { SERVER_URL } from '@/lib/constants'
 
 interface ActivityLogEntry {
     id: number
@@ -7,8 +8,6 @@ interface ActivityLogEntry {
     note: string
     created_at: string
 }
-
-const SERVER_URL = 'https://canna-hydro-crm.onrender.com/businesses/'
 
 export const useBusinessActivity = (id: number | null) => {
     const [data, setData] = useState<ActivityLogEntry[]>([])
@@ -41,6 +40,7 @@ export const useBusinessActivity = (id: number | null) => {
     }, [id])
 
   return {
+    setData,
     data,
     loading,
     error
