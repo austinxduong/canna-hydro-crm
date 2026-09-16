@@ -5,7 +5,12 @@ const Header = () => {
   return (
     <div className="flex justify-between items-center bg-gray-100 px-4 py-1.5 border-b border-gray-300">
         <div className="font-bold text-xl">CannaHydro</div>
-        <div className="text-gray-500">Dashboard</div>
+        <NavLink 
+          to="/dashboard"
+          className={( {isActive }) => isActive ? "border-b-2 font bold" : "text-gray-500"}
+          >
+            Dashboard
+        </NavLink>
         <NavLink
           to="/map"
           className={({ isActive }) => isActive ? "border-b-2 font bold" : "text-gray-500"}
