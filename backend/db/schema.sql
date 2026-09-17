@@ -73,6 +73,8 @@ ALTER TABLE "Invites" ADD FOREIGN KEY ("invited_by") REFERENCES "Users" ("id") D
 
 ALTER TABLE "auth_identities" ADD FOREIGN KEY ("user_id") REFERENCES "Users" ("id") DEFERRABLE INITIALLY IMMEDIATE;
 
+ALTER TABLE "Business" ALTER COLUMN stage SET DEFAULT 'New';
+
 CREATE INDEX idx_business_location ON "Business" USING GIST (location);
 
 CREATE INDEX idx_business_name_trgm ON "Business" USING GIN (name gin_trgm_ops);
