@@ -86,19 +86,40 @@ app.patch('/businesses/:id', limiter, async (req: Request, res: Response) =>{
             return res.status(400).json({message: "fields cannot be empty"})
         }
         const existingBusiness = await pool.query(
-            'SELECT stage FROM "Business" WHERE id = $1', [req.params.id])
+            'SELECT stage, assigned_rep FROM "Business" WHERE id = $1', [req.params.id])
         if (existingBusiness.rows.length === 0) {
             return res.status(404).json({message: "Item not found"})
         }
         const previousStage = existingBusiness.rows[0].stage
         const stageChanged = previousStage !== req.body.stage
+
+        const previousRep = existingBusiness.rows[0].assigned_rep
+        let previousRepName = 'Unassigned'
+        let repChanged = previousRep !== req.body.assigned_rep
+        let newRep = req.body.assigned_rep
+        let newRepName = 'Unassigned'
+
         const updatedBusiness = await pool.query(
             'UPDATE "Business" SET name = $2, address = $3, category = $4, stage = $5, assigned_rep = $6, last_activity_at = NOW() WHERE id =$1 RETURNING *' , [req.params.id, req.body.name, req.body.address, req.body.category, req.body.stage, req.body.assigned_rep])
         if (updatedBusiness.rows.length === 0) {
             return res.status(404).json({message: "Item not found"})
         }
+        if (previousRep !== null) {
+        const prevRepLogEntry = await pool.query(
+            'SELECT name FROM "Users" WHERE id = $1', [previousRep])
+            previousRepName = prevRepLogEntry.rows[0].name
+        }
+        if (newRep !== null) {
+        const newRepLogEntry = await pool.query(
+            'SELECT name FROM "Users" WHERE id = $1', [newRep])
+            newRepName = newRepLogEntry.rows[0].name
+        }
+        if (repChanged) {
+            await pool.query(
+            'INSERT INTO "activity_log"(business_id, activity_type, note, created_at) VALUES ($1, $2, $3, NOW()) RETURNING *', [req.params.id, 'rep_change', `Rep changed from ${previousRepName} to ${newRepName}`])  
+        }
         if (stageChanged) {
-        const activityLogEntry = await pool.query(
+             await pool.query(
             'INSERT INTO "activity_log"(business_id, activity_type, note, created_at) VALUES ($1, $2, $3, NOW()) RETURNING *', [req.params.id, 'stage_change', `Stage moved from ${previousStage} to ${req.body.stage}`])
         }
         res.status(200).json(updatedBusiness.rows[0])
