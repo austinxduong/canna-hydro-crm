@@ -165,6 +165,7 @@ app.post('/businesses/:id/activity', async (req: Request, res: Response) => {
         return res.status(404).json({message: "Business not found"})
         }
         const existingActivity = await pool.query('INSERT into "activity_log" (business_id, activity_type, note, created_at) VALUES ($1, $2, $3, NOW()) RETURNING *', [req.params.id, 'note', req.body.note])
+        await pool.query('UPDATE "Business" SET last_activity_at = NOW() WHERE id = $1', [req.params.id])
         res.status(201).json(existingActivity.rows[0])
     } catch (err) {
         res.status(500).send('Sometihng went wrong')
