@@ -9,7 +9,7 @@ CREATE TABLE "Invites" (
   "status" varchar,
   "role" varchar,
   "invited_by" integer,
-  "expires_at" timestamp
+  "expires_at" timestamptz
 );
 
 CREATE TABLE "auth_identities" (
@@ -25,7 +25,7 @@ CREATE TABLE "Users" (
   "email" varchar UNIQUE,
   "status" varchar,
   "role" varchar,
-  "last_active" timestamp
+  "last_active" timestamptz
 );
 
 CREATE TABLE "Business" (
@@ -39,7 +39,7 @@ CREATE TABLE "Business" (
   "license_number" varchar,
   "stage" varchar,
   "assigned_rep" integer,
-  "last_activity_at" timestamp
+  "last_activity_at" timestamptz
 );
 
 CREATE TABLE "activity_log" (
@@ -48,7 +48,7 @@ CREATE TABLE "activity_log" (
   "business_id" integer,
   "activity_type" varchar,
   "note" text,
-  "created_at" timestamp
+  "created_at" timestamptz
 );
 
 CREATE TABLE "source_records" (
@@ -58,7 +58,7 @@ CREATE TABLE "source_records" (
   "source_record_id" varchar,
   "raw_name" varchar,
   "raw_address" varchar,
-  "pulled_at" timestamp
+  "pulled_at" timestamptz
 );
 
 ALTER TABLE "Business" ADD FOREIGN KEY ("assigned_rep") REFERENCES "Users" ("id") DEFERRABLE INITIALLY IMMEDIATE;
@@ -72,6 +72,16 @@ ALTER TABLE "activity_log" ADD FOREIGN KEY ("user_id") REFERENCES "Users" ("id")
 ALTER TABLE "Invites" ADD FOREIGN KEY ("invited_by") REFERENCES "Users" ("id") DEFERRABLE INITIALLY IMMEDIATE;
 
 ALTER TABLE "auth_identities" ADD FOREIGN KEY ("user_id") REFERENCES "Users" ("id") DEFERRABLE INITIALLY IMMEDIATE;
+
+ALTER TABLE "Invites" ALTER COLUMN "expires_at" TYPE timestamptz USING "expires_at" AT TIME ZONE 'UTC';
+
+ALTER TABLE "Users" ALTER COLUMN "last_active" TYPE timestamptz USING "last_active" AT TIME ZONE 'UTC';
+
+ALTER TABLE "Business" ALTER COLUMN "last_activity_at" TYPE timestamptz USING "last_activity_at" AT TIME ZONE 'UTC';
+
+ALTER TABLE "activity_log" ALTER COLUMN "created_at" TYPE timestamptz USING "created_at" AT TIME ZONE 'UTC';
+
+ALTER TABLE "source_records" ALTER COLUMN "pulled_at" TYPE timestamptz USING "pulled_at" AT TIME ZONE 'UTC';
 
 ALTER TABLE "Business" ALTER COLUMN stage SET DEFAULT 'New';
 
