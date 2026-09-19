@@ -197,4 +197,19 @@ app.get('/dashboard/stats', async (req: Request, res: Response) => {
     }
 })
 
+app.get('/dashboard/activityFeed', async (req: Request, res: Response) => {
+    try {
+        const activityStats = await pool.query(`
+            SELECT name, activity_type, note, created_at
+            FROM "activity_log"
+            JOIN "Business" ON "business_id" = "Business".id
+            ORDER BY created_at DESC
+            LIMIT 20
+            `)
+            res.json(activityStats.rows)
+    } catch (err) {
+        res.status(500).send('Something went wrong')
+    }
+})
+
 module.exports = app;
