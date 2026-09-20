@@ -6,7 +6,6 @@ interface Stats {
     customers_won: number
     unassigned_businesses: number
     active_this_week: number
-
 }
 
 export const useDashboardStats = () => {

@@ -1,15 +1,42 @@
 import React from 'react'
+import { useDashboardStats } from '@/hooks/useDashboardStats'
+import { useActivityFeed } from '@/hooks/useActivityFeed'
+import { Spinner } from "@/components/ui/spinner"
+import StatsCard from './StatsCard'
 
 const Dashboard = () => {
+  const {data, loading, error} = useDashboardStats()
+  const {data : activity, loading : activityLoading, error : activityError} = useActivityFeed()
+
+
   return (
     <div>
     <div className="font-bold p-3 text-gray-500">OVERVIEW</div>
+    {error ? (<div>Something went wrong: {error}</div>) : (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-3">
-        <div className="border border-gray-300 rounded h-30 p-3 font-bold text-gray-500 items-end flex justify-start pb-10 pl-5">Total Leads</div>
-        <div className="border border-gray-300 rounded h-30 p-3 font-bold text-gray-500 items-end flex justify-start pb-10 pl-5">Customers Won</div>
-        <div className="border border-gray-300 rounded h-30 p-3 font-bold text-gray-500 items-end flex justify-start pb-10 pl-5">Unassigned Businesses</div>
-        <div className="border border-gray-300 rounded h-30 p-3 font-bold text-gray-500 items-end flex justify-start pb-10 pl-5">Active this week</div>
-        </div>
+        <StatsCard
+          title="Total Leads"
+          value={data?.total_leads}
+          loading={loading}
+        />
+          <StatsCard
+          title="Customers Won"
+          value={data?.customers_won}
+          loading={loading}
+        />
+          <StatsCard
+          title="Unassigned Businesses"
+          value={data?.unassigned_businesses}
+          loading={loading}
+        />
+        <StatsCard
+          title="Active this week"
+          value={data?.active_this_week}
+          loading={loading}
+        />
+      </div>
+    )}
+
       <div className="p-3">
         <button className="border font-bold bg-gray-100 text-gray-500 border-gray-300 rounded p-3 hover:text-white hover:bg-purple-700 mr-3"> + Add Lead</button>
         <button className="border font-bold bg-gray-100 text-gray-500 border-gray-300 rounded p-3 hover:text-white hover:bg-purple-700 "> View Map</button>
