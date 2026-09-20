@@ -185,10 +185,10 @@ app.get('/dashboard/stats', async (req: Request, res: Response) => {
     try {
         const stats = await pool.query(`
             SELECT
-                COUNT (*)::int AS TOTAL,
-                COUNT(CASE WHEN "stage" = 'Customer' THEN 1 END)::int AS metric_a,
-                COUNT(CASE WHEN "assigned_rep" IS NULL THEN 1 END)::int AS metric_b,
-                COUNT(CASE WHEN last_activity_at >= NOW() - INTERVAL '7 days' THEN 1 END)::int AS metric_c
+                COUNT (*)::int AS total_leads,
+                COUNT(CASE WHEN "stage" = 'Customer' THEN 1 END)::int AS customers_won,
+                COUNT(CASE WHEN "assigned_rep" IS NULL THEN 1 END)::int AS unassigned_businesses,
+                COUNT(CASE WHEN last_activity_at >= NOW() - INTERVAL '7 days' THEN 1 END)::int AS active_this_week
             FROM "Business"
             `)
             res.json(stats.rows[0])
