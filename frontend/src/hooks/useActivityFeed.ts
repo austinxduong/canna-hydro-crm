@@ -2,6 +2,7 @@ import React, {useState, useEffect} from 'react'
 import { ACTIVITY_FEED_URL } from '@/lib/constants'
 
 interface ActivityFeed {
+    id: number
     name: string
     activity_type: string
     note: string
