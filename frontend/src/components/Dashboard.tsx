@@ -4,10 +4,12 @@ import { useActivityFeed } from '@/hooks/useActivityFeed'
 import { Spinner } from "@/components/ui/spinner"
 import StatsCard from './StatsCard'
 import { timeAgo } from '@/lib/formatters'
+import { useNavigate } from 'react-router-dom'
 
 const Dashboard = () => {
   const {data, loading, error} = useDashboardStats()
   const {data : activity, loading : activityLoading, error : activityError} = useActivityFeed()
+  const navigate = useNavigate();
 
 
   return (
@@ -40,7 +42,7 @@ const Dashboard = () => {
 
       <div className="p-3">
         <button className="border font-bold bg-gray-100 text-gray-500 border-gray-300 rounded p-3 hover:text-white hover:bg-purple-700 mr-3"> + Add Lead</button>
-        <button className="border font-bold bg-gray-100 text-gray-500 border-gray-300 rounded p-3 hover:text-white hover:bg-purple-700 "> View Map</button>
+        <button className="border font-bold bg-gray-100 text-gray-500 border-gray-300 rounded p-3 hover:text-white hover:bg-purple-700 " onClick={() => navigate("/map")}> View Map</button>
       </div>
       <div className="grid lg:grid-cols-2">
 
@@ -51,7 +53,7 @@ const Dashboard = () => {
             {activityError && <div>Something went wrong:{activityError}</div>}
             {activity.map((activities) => (
               <div key={activities.id}>
-              <div className="flex flex-row pt-2"><div className="font-bold">{activities.name}</div><div className="pl-1">{activities.note}</div><div className="pl-1"></div></div>
+              <div className="flex flex-row pt-2"><div className="font-bold">{activities.name} :</div><div className="pl-1">{activities.note}</div><div className="pl-1"></div></div>
               <div className="border-b border-gray-300 pb-2">{activities.created_at ? timeAgo(activities.created_at) : "No Activity"}</div>
               </div>
             ))}

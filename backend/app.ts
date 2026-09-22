@@ -212,4 +212,17 @@ app.get('/dashboard/activityFeed', async (req: Request, res: Response) => {
     }
 })
 
+app.get('/dashboard/sourceSync', async (req: Request, res: Response) => {
+    try {
+        const sourceSync = await pool.query(`
+            SELECT source, MAX(pulled_at) AS latest_pulled_at
+            FROM source_records
+            GROUP BY source;
+            `)
+            res.json(sourceSync.rows)
+    } catch (err) {
+        res.status(500).send('Something went wrong')
+    }
+})
+
 module.exports = app;
