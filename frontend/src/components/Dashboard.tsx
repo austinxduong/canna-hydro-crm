@@ -5,10 +5,13 @@ import { Spinner } from "@/components/ui/spinner"
 import StatsCard from './StatsCard'
 import { timeAgo } from '@/lib/formatters'
 import { useNavigate } from 'react-router-dom'
+import { useDataSourceSync } from '@/hooks/useDataSourceSync'
+import { SOURCE_LABELS } from '@/lib/constants'
 
 const Dashboard = () => {
   const {data, loading, error} = useDashboardStats()
   const {data : activity, loading : activityLoading, error : activityError} = useActivityFeed()
+  const {data: sourceSync, loading: sourceSyncLoading, error : sourceSyncError} = useDataSourceSync()
   const navigate = useNavigate();
 
 
@@ -59,14 +62,24 @@ const Dashboard = () => {
             ))}
           </div>
         </div>
-
+        
+    
         <div>
         <div className="font-bold p-3 text-gray-500 ">DATA SOURCE SYNC</div>
-          <div className="border border-gray-300 space-y-1 m-3 p-3 rounded"> <p>Oregon Registry</p>Washington Registry<p>ESRI ARCGIS</p><p></p></div>
+          <div className="border border-gray-300 space-y-1 m-3 p-3 rounded">
+            {sourceSyncLoading && <div><Spinner/></div>}
+            {sourceSyncError && <div>Something went wrong: {sourceSyncError}</div>}
+            {sourceSync.map((source) => (
+              <div key={source.source}>
+                <div className="border-b border-gray-300 pb-2 pt-2"><p className="font-bold">{SOURCE_LABELS[source.source] ||source.source}</p><p>Latest pull: {new Date(source.latest_pulled_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year:'numeric', hour: 'numeric', minute: '2-digit', hour12: true})}</p></div>
+              </div>
+            ))}
+          </div>
         </div>
         
+        </div>
       </div>
-    </div>
+  
   )
 }
 
