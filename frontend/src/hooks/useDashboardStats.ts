@@ -13,30 +13,32 @@ export const useDashboardStats = () => {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>()
 
-    useEffect(() => {
 
-        async function startFetching() {
-            setLoading(true)
+async function startFetching() {
+    setLoading(true)
 
-            try {
-                const response = await fetch(STATS_URL)
-                if (!response.ok) {
-                    throw new Error(`Failed to fetch stats (Status ${response.status})`)
-                }
-                const json = await response.json()
-                setData(json)
-            } catch (err) {
-                setError(err instanceof Error ? err.message : String(err))
-            } finally {
-                setLoading(false)
-            }
+    try {
+        const response = await fetch(STATS_URL)
+        if (!response.ok) {
+            throw new Error(`Failed to fetch stats (Status ${response.status})`)
         }
-        startFetching()
-    }, [])
+        const json = await response.json()
+        setData(json)
+    } catch (err) {
+        setError(err instanceof Error ? err.message : String(err))
+    } finally {
+        setLoading(false)
+    }
+}
+
+useEffect(() => {
+    startFetching()
+}, [])
 
   return {
     data,
     loading,
-    error
+    error,
+    refetch: startFetching,
   }
 }
