@@ -27,3 +27,51 @@ Running list of known issues / improvements to revisit later. Not urgent — par
 **Options considered:** a Postgres `CHECK (stage IN (...))` constraint, or an `ENUM` type — either moves the source of truth from the frontend TypeScript array into the schema itself, so an invalid value becomes physically impossible to insert.
 
 **Decision:** parked — not blocking dashboard work. Revisit if/when stage-dependent aggregate queries (dashboard cards, reporting) become numerous enough that a silent mismatch would meaningfully skew real numbers.
+
+## Schema: no `UNIQUE` constraint on `Business.license_number`
+
+**Where:** `backend/db/schema.sql` — `Business.license_number` (currently plain `varchar`)
+
+**What's happening:** The surrogate `id` (`GENERATED ALWAYS AS IDENTITY`) guarantees every *row* is unique, but nothing guarantees every *business* is unique. The same license number can be inserted twice and each row just gets a fresh `id`. The only protection today is the ingestion pipeline's own dedup in `loader.py`, which only covers that one writer — `POST /businesses` in `app.ts`, manual SQL, a future writer, or two overlapping pipeline runs (check-then-insert race) all bypass it.
+
+**Downstream effect:** Duplicate `Business` rows for the same real business, each accumulating its own activity history and `source_records`.
+
+**Options considered:** `license_number varchar UNIQUE`. Postgres treats `NULL`s as distinct by default, so unlicensed prospects / manual leads (all `NULL`) don't conflict with each other — only real license numbers are forced unique. Caveats:
+- `UNIQUE` compares exact strings, so it only works because ingestion normalizes license numbers first. Any other write path that sets `license_number` must normalize too (or the DB must enforce the normalized form, e.g. a `CHECK` on format or a unique index on a normalized expression — revisit in Week 6 indexes).
+- The `ALTER TABLE ... ADD CONSTRAINT` will fail if duplicates already exist — run a `GROUP BY license_number HAVING COUNT(*) > 1` check first.
+- Decide how the pipeline reacts when the constraint rejects an insert (crash / skip / update existing row — see `INSERT ... ON CONFLICT`).
+
+**Principle:** app-level checks give good error messages; DB constraints are the guarantee (defense in depth). Same idea as the `stage` `CHECK` constraint item above.
+
+**Decision:** not yet decided.
+
+## Ingestion: fuzzy match links the record but never writes the license back to `Business`
+
+**Where:** `ingestion/loader.py` — `load_record()` / `find_matching_business_by_proximity()`
+
+**What's happening:** Matching order is (1) exact `license_number` match → (2) if the incoming record has coordinates, proximity + name match (`ST_DWithin` 50m **AND** trigram `similarity(name) >= 0.4`) → (3) otherwise insert a new business. When step 2 matches, the only write is `update_source_record_business_id()` — the `Business` row itself is never updated. Note: there is no separate address-text check; proximity on the geocoded address is effectively the address signal.
+
+**Downstream effect:** A manually created lead (no license) that gets fuzzy-matched keeps `license_number = NULL` forever, so every future run misses the exact match in step 1 and relies on fuzzy matching again. If the name changes or the geocode shifts, it eventually falls through to step 3 and becomes a duplicate.
+
+**Options considered:**
+- On a fuzzy match, write the registry's license (and other official fields) back to the `Business` row. Open question: only fill fields that are `NULL`, or also overwrite rep-entered values?
+- Check whether `0.4` is too loose for neighboring businesses, e.g. `SELECT similarity('Green Leaf Hydroponics', 'Green Leaf Dispensary');`. Options: raise the threshold, add a category check, or send middling scores to a review tier.
+- Tiered matching by confidence: high confidence → auto-merge; uncertain → insert + flag for rep review; no match → insert.
+
+**Principle:** prefer false negatives (visible, fixable duplicates) over false positives (silent wrong merges that corrupt history).
+
+**Decision:** direction chosen — tiered matching with "flag for review" as the safe fallback for uncertain matches. Write-back rules and threshold tuning not yet decided.
+
+## Backend: manual leads are never geocoded, so proximity matching can't find them
+
+**Where:** `backend/app.ts` — `POST /businesses` (inserts only `name`, `address`, `category`)
+
+**What's happening:** Manually created leads are saved with `location = NULL` (and no `license_number`). Proximity matching in `loader.py` (`ST_DWithin`) needs a `location` on the existing row, so it can never match a manual lead. When the registry version of that business is ingested later, it misses both the license match and the proximity match and gets inserted as a new row.
+
+**Downstream effect:** Duplicate business — one row with the rep's notes/activity history, one with the official registry data.
+
+**Options considered:** geocode the address server-side in `POST /businesses` and store `location` before insert (rep just types an address; optionally add address autocomplete / map-pin confirmation in the UI for accuracy). Open questions:
+- Where the geocoding logic lives — `ingestion/geocode.py` is Python; duplicating it in Express means the same rule in two codebases (drift risk).
+- What happens if the geocoding API fails or times out: block the save, or save with `location = NULL` and backfill later (background job — see system design Week 9).
+
+**Decision:** geocode on submit. Implementation details above not yet decided.
