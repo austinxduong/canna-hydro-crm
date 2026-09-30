@@ -14,7 +14,7 @@ Running list of known issues / improvements to revisit later. Not urgent — par
 1. **Read-side fix only:** change the aggregation to `STRING_AGG(DISTINCT source_records.source, ', ')`. Keeps every pull as its own row (true audit trail of every check), just de-dupes for display. Simple, no ingestion changes.
 2. **Ingestion-side fix (change detection / upsert):** before inserting, look up the most recent `source_records` row for that `business_id` + `source` + `source_record_id`. If the incoming pull is identical (same `raw_name`/`raw_address`), just update that row's `pulled_at` ("last confirmed") instead of inserting a new row. Only insert a new row when something actually changed. Gives a *meaningful* history (license status changes, name/address changes over time) instead of noise, at the cost of reworking `load_record`'s flow (source record insert currently happens before the business match is even resolved).
 
-**Decision:** parked for now — pipeline is still fully manual (no cron/scheduler wired up anywhere yet), so there's no unbounded growth happening in the background. Revisit before adding any kind of automatic/scheduled ingestion run — that's the point duplicate rows would start accumulating unattended instead of just during manual testing.
+**Decision:** parked for now — pipeline is still fully manual (no cron/scheduler wired up anywhere yet), so there's no unbounded growth happening in the background. This is now explicitly bundled with the "Ingestion: no scheduled/automatic pipeline runs" item below — adding a scheduler without also landing the ingestion-side fix (option 2 above) would immediately reactivate this bug under sustained, unattended growth instead of just during manual testing, so the two are being treated as one combined feature rather than sequential work.
 
 ## Backend: no server-side validation of `stage` values
 
@@ -75,3 +75,15 @@ Running list of known issues / improvements to revisit later. Not urgent — par
 - What happens if the geocoding API fails or times out: block the save, or save with `location = NULL` and backfill later (background job — see system design Week 9).
 
 **Decision:** geocode on submit. Implementation details above not yet decided.
+
+## Ingestion: no scheduled/automatic pipeline runs
+
+**Where:** `ingestion/main.py` — currently just a DB connection stub (connects, prints the dbname, closes); doesn't invoke `loader.py` at all yet. Confirmed no scheduler anywhere in the repo — no `cron`/`schedule`/`APScheduler` usage, no GitHub Actions workflow, no Render cron job config, no `Procfile`.
+
+**What's happening:** The pipeline only runs when a human manually triggers it. Nothing pulls fresh registry data, or re-checks existing records, on any kind of cadence.
+
+**Downstream effect:** Two concrete costs. First, a manually-created lead's `license_number` (see the fuzzy-match write-back entry above) only has a chance to get backfilled whenever someone happens to rerun the pipeline by hand — there's no reliable guarantee that ever happens. Second, more broadly, state registry changes (new licenses, status changes, name/address updates) only reach the CRM whenever a human remembers to trigger a pull, which doesn't hold up as real usage grows past manual testing.
+
+**Options considered:** A scheduled job — cron, a hosted scheduler (e.g. Render Cron Jobs), GitHub Actions on a schedule — running the pipeline on a regular cadence (e.g. daily).
+
+**Decision:** direction chosen — build this combined with the `source_records` duplicate-row fix above (the ingestion-side change-detection/upsert option specifically, not the read-side `STRING_AGG(DISTINCT ...)` cosmetic fix) as a single piece of work, not two sequential ones. Running an unattended, recurring pull without first landing the duplicate-insert fix would turn a currently-contained, manual-testing-only annoyance into genuine unbounded row growth in production. Cadence and hosting mechanism not yet decided.
