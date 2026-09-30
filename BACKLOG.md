@@ -64,17 +64,17 @@ Running list of known issues / improvements to revisit later. Not urgent — par
 
 ## Backend: manual leads are never geocoded, so proximity matching can't find them
 
-**Where:** `backend/app.ts` — `POST /businesses` (inserts only `name`, `address`, `category`)
+**Where:** `backend/app.ts` — `POST /businesses` and `PATCH /businesses/:id` (address can be set/changed in either)
 
 **What's happening:** Manually created leads are saved with `location = NULL` (and no `license_number`). Proximity matching in `loader.py` (`ST_DWithin`) needs a `location` on the existing row, so it can never match a manual lead. When the registry version of that business is ingested later, it misses both the license match and the proximity match and gets inserted as a new row.
 
 **Downstream effect:** Duplicate business — one row with the rep's notes/activity history, one with the official registry data.
 
-**Options considered:** geocode the address server-side in `POST /businesses` and store `location` before insert (rep just types an address; optionally add address autocomplete / map-pin confirmation in the UI for accuracy). Open questions:
-- Where the geocoding logic lives — `ingestion/geocode.py` is Python; duplicating it in Express means the same rule in two codebases (drift risk).
-- What happens if the geocoding API fails or times out: block the save, or save with `location = NULL` and backfill later (background job — see system design Week 9).
+**Options considered:** geocode the address server-side in `POST`/`PATCH` and store `location` before insert/update (rep just types an address; optionally add address autocomplete / map-pin confirmation in the UI for accuracy). Open questions were where the geocoding logic lives (`ingestion/geocode.py` is Python; duplicating it in Express means the same rule in two codebases) and what happens on a failed/timed-out geocode call.
 
-**Decision:** geocode on submit. Implementation details above not yet decided.
+**Decision:** geocode on submit, synchronously, inline in the `POST`/`PATCH` route handlers (new TypeScript code in `backend/` — not reused from `ingestion/geocode.py`, since Express can't call into the Python ingestion codebase in-process). Accepted as a deliberate, small duplication: the Census geocoder is a free, stable public API with minimal surface area to drift on.
+
+On a failed/timed-out geocode call: don't block the save. Insert/update the row with `location = NULL` — the business still appears in list views and can be worked by a rep, it just has no map pin until resolved. Backfilling those null-`location` rows is handled by the scheduled sweep described in "Ingestion: no scheduled/automatic pipeline runs" below, which reuses the existing Python geocoding code rather than a second TypeScript implementation.
 
 ## Ingestion: no scheduled/automatic pipeline runs
 
@@ -87,3 +87,5 @@ Running list of known issues / improvements to revisit later. Not urgent — par
 **Options considered:** A scheduled job — cron, a hosted scheduler (e.g. Render Cron Jobs), GitHub Actions on a schedule — running the pipeline on a regular cadence (e.g. daily).
 
 **Decision:** direction chosen — build this combined with the `source_records` duplicate-row fix above (the ingestion-side change-detection/upsert option specifically, not the read-side `STRING_AGG(DISTINCT ...)` cosmetic fix) as a single piece of work, not two sequential ones. Running an unattended, recurring pull without first landing the duplicate-insert fix would turn a currently-contained, manual-testing-only annoyance into genuine unbounded row growth in production. Cadence and hosting mechanism not yet decided.
+
+Also bundled in: a null-`location` backfill sweep (see "manual leads are never geocoded" above) — re-run geocoding for existing `Business` rows where `location IS NULL`, reusing `resolve_coordinates`/`geocode_address` from `ingestion/normalize.py` and `ingestion/geocode.py` rather than writing new logic. This isn't just convenient to bundle, it's an ordering dependency: `loader.py`'s proximity matching (`ST_DWithin`) can't match a business with no `location`, so a manually-created lead that failed geocoding on submit would also stay unmatched (and its `license_number` unbackfilled) by the registry-pull/matching step until the sweep resolves it. The sweep needs to run before (or as an early step within) each scheduled run, ahead of the registry pull/matching. Ships first as a manual script (`ingestion/backfill_geocode.py`, run on demand); promoted to run automatically once this item's scheduler is built.
