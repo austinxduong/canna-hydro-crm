@@ -4,6 +4,7 @@ const pool = require('./db/Pool')
 const cors = require('cors');
 const { rateLimit } = require('express-rate-limit')
 import { Request, Response, NextFunction } from 'express';
+import { geocodeAddress } from './lib/geocode';
 
 app.use(express.json())
 app.use(cors())
@@ -86,7 +87,7 @@ app.patch('/businesses/:id', limiter, async (req: Request, res: Response) =>{
             return res.status(400).json({message: "fields cannot be empty"})
         }
         const existingBusiness = await pool.query(
-            'SELECT stage, assigned_rep FROM "Business" WHERE id = $1', [req.params.id])
+            'SELECT stage, assigned_rep, address, ST_X(location::geometry) AS lng, ST_Y(location::geometry) AS lat FROM "Business" WHERE id = $1', [req.params.id])
         if (existingBusiness.rows.length === 0) {
             return res.status(404).json({message: "Item not found"})
         }
@@ -99,8 +100,20 @@ app.patch('/businesses/:id', limiter, async (req: Request, res: Response) =>{
         let newRep = req.body.assigned_rep
         let newRepName = 'Unassigned'
 
+        const previousAddress = existingBusiness.rows[0].address
+        const addressChanged = previousAddress !== req.body.address
+        const newAddress = req.body.address
+
+        let coords = null
+
+        if (addressChanged) {
+            coords = await geocodeAddress(newAddress)
+        } else if (!addressChanged) {
+            coords = {lat: existingBusiness.rows[0].lat, lng: existingBusiness.rows[0].lng}
+        }
+
         const updatedBusiness = await pool.query(
-            'UPDATE "Business" SET name = $2, address = $3, category = $4, stage = $5, assigned_rep = $6, last_activity_at = NOW() WHERE id =$1 RETURNING *' , [req.params.id, req.body.name, req.body.address, req.body.category, req.body.stage, req.body.assigned_rep])
+            'UPDATE "Business" SET name = $2, address = $3, category = $4, stage = $5, assigned_rep = $6, location = ST_SetSRID(ST_MakePoint($7, $8), 4326), last_activity_at = NOW() WHERE id =$1 RETURNING *' , [req.params.id, req.body.name, req.body.address, req.body.category, req.body.stage, req.body.assigned_rep, coords ? coords.lng : null, coords ? coords.lat : null])
         if (updatedBusiness.rows.length === 0) {
             return res.status(404).json({message: "Item not found"})
         }
@@ -113,6 +126,10 @@ app.patch('/businesses/:id', limiter, async (req: Request, res: Response) =>{
         const newRepLogEntry = await pool.query(
             'SELECT name FROM "Users" WHERE id = $1', [newRep])
             newRepName = newRepLogEntry.rows[0].name
+        }
+        if (addressChanged) {
+            await pool.query(
+            'INSERT INTO "activity_log"(business_id, activity_type, note, created_at) VALUES ($1, $2, $3, NOW()) RETURNING *', [req.params.id, 'address_change', `Address changed from ${previousAddress} to ${newAddress}`])
         }
         if (repChanged) {
             await pool.query(
