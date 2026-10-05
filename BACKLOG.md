@@ -112,3 +112,18 @@ Also bundled in: a null-`location` backfill sweep (see "manual leads are never g
 - **Postgres as source of truth, Redis as a fast copy:** if Redis is the *only* record of a revocation, a lost entry can't even be detected, let alone re-added — there's no record it ever existed. Instead, record every revocation durably in Postgres (e.g. `Users.status = 'disabled'`, which already exists, or a revocations table), write it to Redis for the fast every-request check, and automatically rebuild the Redis denylist from Postgres after a Redis restart. Redis makes the check fast; Postgres keeps it correct. Trade-off: more code (dual writes + a rebuild step) in exchange for never losing a revocation. Same principle as caching (system design Week 7): the cache can be wiped any time because the real data lives elsewhere.
 
 **Decision:** Redis is the planned choice. Persistence setting, token lifetime, and whether to back the denylist with a Postgres source of truth are not yet decided — decide together when building auth.
+
+## Frontend: map gives no visibility into businesses excluded due to missing coordinates
+
+**Where:** `frontend/src/components/MapView.tsx` (no handling for this yet); `backend/app.ts` — `POST`/`PATCH /businesses` is the source of null `location` values, since a failed geocode no longer blocks the save.
+
+**What's happening:** A business with `location = NULL` can't be rendered on the map — a pin (or any marker) needs real coordinates to be positioned at, so there's nothing to place. This isn't a defect: no code is behaving incorrectly, there's no way to put something in coordinate space without a coordinate. But there's also currently no signal anywhere near the map telling a rep "N businesses aren't shown here because they have no coordinates" — someone working from the map view has no way to know it's missing anyone at all.
+
+**Downstream effect:** Nothing is actually lost — a null-location business is still fully reachable through the regular list view, which has no filter on `location`. The gap is discoverability specifically for a rep working map-first: they could stay unaware that leads exist outside what they're looking at, with nothing prompting them to go check the list.
+
+**Options considered:**
+- Do nothing beyond what the list view already provides — every business is reachable there regardless of location status.
+- A separate, filtered view (`WHERE location IS NULL`) surfaced near the map (not on it, since nothing can render there without coordinates) — listing just the businesses currently excluded from the map.
+
+**Decision:** not yet decided — deliberately deferred. Not required for correctness, only for discoverability in map-first workflows. Revisit once the manual-lead creation form is built and gets real use, to see whether this gap actually matters in practice.
+
