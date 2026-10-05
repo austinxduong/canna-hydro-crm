@@ -49,7 +49,8 @@ app.post('/businesses', limiter, async (req: Request, res: Response) => {
         if (!req.body.name || !req.body.address || !req.body.category) {
             return res.status(400).json({message: "fields cannot be empty"})
         }
-        const result = await pool.query('INSERT INTO "Business"(name, address, category) VALUES ($1, $2, $3) RETURNING *', [req.body.name, req.body.address, req.body.category],)
+        const coords = await geocodeAddress(req.body.address)
+        const result = await pool.query('INSERT INTO "Business"(name, address, category, location) VALUES ($1, $2, $3, ST_SetSRID(ST_MakePoint($4, $5), 4326)) RETURNING *', [req.body.name, req.body.address, req.body.category, coords ? coords.lng : null, coords ? coords.lat : null],)
         res.status(201).json(result.rows)
     } catch(error) {
         res.status(500).send('Something went wrong')
