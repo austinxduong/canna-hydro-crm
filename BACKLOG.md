@@ -91,3 +91,24 @@ A related but distinct case: if the address is mistyped but still resolves to *s
 **Decision:** direction chosen — build this combined with the `source_records` duplicate-row fix above (the ingestion-side change-detection/upsert option specifically, not the read-side `STRING_AGG(DISTINCT ...)` cosmetic fix) as a single piece of work, not two sequential ones. Running an unattended, recurring pull without first landing the duplicate-insert fix would turn a currently-contained, manual-testing-only annoyance into genuine unbounded row growth in production. Cadence and hosting mechanism not yet decided.
 
 Also bundled in: a null-`location` backfill sweep (see "manual leads are never geocoded" above) — re-run geocoding for existing `Business` rows where `location IS NULL`, reusing `resolve_coordinates`/`geocode_address` from `ingestion/normalize.py` and `ingestion/geocode.py` rather than writing new logic. This isn't just convenient to bundle, it's an ordering dependency: `loader.py`'s proximity matching (`ST_DWithin`) can't match a business with no `location`, so a manually-created lead that failed geocoding on submit would also stay unmatched (and its `license_number` unbackfilled) by the registry-pull/matching step until the sweep resolves it. The sweep needs to run before (or as an early step within) each scheduled run, ahead of the registry pull/matching. Ships first as a manual script (`ingestion/backfill_geocode.py`, run on demand); promoted to run automatically once this item's scheduler is built.
+
+## Auth: decide Redis persistence + token lifetime before building the JWT denylist
+
+**Where:** not built yet — JWT + Redis-backed denylist is designed but not implemented, and `docker-compose.yml` currently only runs Postgres (no Redis service).
+
+**What's happening:** Redis keeps data in memory (RAM), which is wiped when the Redis process/server restarts. Whether the denylist survives a restart depends on Redis's persistence settings, not on Redis itself:
+- **No persistence:** Redis comes back empty — every revoked token is accepted again.
+- **RDB snapshots** (Redis's own default): saves a full copy to disk every few minutes; a restart reloads the last snapshot, so only tokens revoked *since the last snapshot* are lost.
+- **AOF (append-only file):** logs every write to disk (similar idea to Postgres's WAL); typically loses at most ~1 second of writes.
+- Managed Redis providers often enable stronger persistence, but it varies by provider/plan — check, don't assume.
+
+**Downstream effect:** if denylist entries are lost, revoked tokens (e.g. a removed rep) work again until each token's own expiry.
+
+**Options considered:**
+- Enable AOF (or confirm the managed provider's persistence settings) when adding Redis.
+- Keep access tokens short-lived (e.g. ~15 min): caps the worst-case exposure window after any denylist loss, and keeps the denylist small. Set each denylist key's TTL to the token's remaining lifetime so entries clean themselves up.
+- Alternative: store the denylist in Postgres (`token_denylist (token_id PRIMARY KEY, expires_at)`) — durable on disk and no extra infrastructure, but needs a scheduled cleanup job (`DELETE ... WHERE expires_at < now()`) and adds a query to every authenticated request on the main database.
+
+- **Postgres as source of truth, Redis as a fast copy:** if Redis is the *only* record of a revocation, a lost entry can't even be detected, let alone re-added — there's no record it ever existed. Instead, record every revocation durably in Postgres (e.g. `Users.status = 'disabled'`, which already exists, or a revocations table), write it to Redis for the fast every-request check, and automatically rebuild the Redis denylist from Postgres after a Redis restart. Redis makes the check fast; Postgres keeps it correct. Trade-off: more code (dual writes + a rebuild step) in exchange for never losing a revocation. Same principle as caching (system design Week 7): the cache can be wiped any time because the real data lives elsewhere.
+
+**Decision:** Redis is the planned choice. Persistence setting, token lifetime, and whether to back the denylist with a Postgres source of truth are not yet decided — decide together when building auth.
