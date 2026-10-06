@@ -60,7 +60,7 @@ Running list of known issues / improvements to revisit later. Not urgent — par
 
 **Principle:** prefer false negatives (visible, fixable duplicates) over false positives (silent wrong merges that corrupt history).
 
-**Decision:** direction chosen — tiered matching with "flag for review" as the safe fallback for uncertain matches. Write-back rules and threshold tuning not yet decided.
+**Decision:** direction chosen — tiered matching with "flag for review" as the safe fallback for uncertain matches. Write-back rules and threshold tuning not yet decided. The "flag for review" tier is implemented as the Dedup Review Queue (see "Feature: Dedup Review Queue") — uncertain matches create a `pending` `duplicate_candidates` row.
 
 ## Backend: manual leads are never geocoded, so proximity matching can't find them
 
@@ -76,7 +76,7 @@ Running list of known issues / improvements to revisit later. Not urgent — par
 
 On a failed/timed-out geocode call: don't block the save. Insert/update the row with `location = NULL` — the business still appears in list views and can be worked by a rep, it just has no map pin until resolved. Backfilling those null-`location` rows is handled by the scheduled sweep described in "Ingestion: no scheduled/automatic pipeline runs" below, which reuses the existing Python geocoding code rather than a second TypeScript implementation.
 
-A related but distinct case: if the address is mistyped but still resolves to *some* real location (geocoding APIs generally return a best-guess match rather than requiring an exact one), the row gets saved with a non-null but incorrect `location`. The null-location sweep above doesn't catch this — it only queries `WHERE location IS NULL`. When the registry version is ingested later, `ST_DWithin` compares the wrong saved point against the correct incoming one; if they're far enough apart, the comparison correctly returns false and the registry version still inserts as a new row, producing the same duplicate-business outcome as the null case, just via a different mechanism. Not being treated as a bug to prevent — loosening the proximity match to catch mistyped-but-nearby addresses risks the opposite failure mode this file already commits to avoiding (see the fuzzy-match entry's "prefer false negatives over false positives" principle). Resolution path: the planned Dedup Review Queue UI (Data tab — Duplicates) is the intended place this gets surfaced and resolved by a rep; not yet built.
+A related but distinct case: if the address is mistyped but still resolves to *some* real location (geocoding APIs generally return a best-guess match rather than requiring an exact one), the row gets saved with a non-null but incorrect `location`. The null-location sweep above doesn't catch this — it only queries `WHERE location IS NULL`. When the registry version is ingested later, `ST_DWithin` compares the wrong saved point against the correct incoming one; if they're far enough apart, the comparison correctly returns false and the registry version still inserts as a new row, producing the same duplicate-business outcome as the null case, just via a different mechanism. Not being treated as a bug to prevent — loosening the proximity match to catch mistyped-but-nearby addresses risks the opposite failure mode this file already commits to avoiding (see the fuzzy-match entry's "prefer false negatives over false positives" principle). Resolution path: the Dedup Review Queue (see "Feature: Dedup Review Queue"). Note that ingestion will **not** flag this case on its own — the misplaced pin is outside the 50m proximity check, so no candidate is ever created automatically. It reaches the queue only when a rep notices and flags it manually (`POST /duplicate-candidates`), or later via the parked automated sweep.
 
 ## Ingestion: no scheduled/automatic pipeline runs
 
@@ -127,3 +127,42 @@ Also bundled in: a null-`location` backfill sweep (see "manual leads are never g
 
 **Decision:** not yet decided — deliberately deferred. Not required for correctness, only for discoverability in map-first workflows. Revisit once the manual-lead creation form is built and gets real use, to see whether this gap actually matters in practice.
 
+## Feature: Dedup Review Queue (Data tab — Duplicates)
+
+**Where:** not built yet — new `duplicate_candidates` table in `backend/db/schema.sql`; new routes in `backend/app.ts`; candidate creation in `ingestion/loader.py`; new screen in `frontend/` (per Miro wireframe, Data tab → Duplicates).
+
+**What's happening:** Several entries in this file name this screen as the place uncertain or missed duplicates get resolved, but nothing exists yet to store a suspected pair, show it to a rep, or record the decision.
+
+**Downstream effect:** Without a stored decision, a rejected pair is re-flagged on every ingestion run, and duplicates that ingestion can't detect (see "manual leads are never geocoded") have no resolution path at all.
+
+**Options considered:**
+1. **Action endpoint:** `POST /businesses/:id/merge`. Works for approve, but reject has no natural request and nothing records that a pair was reviewed — rejected pairs come back next run. Adding a reject endpoint means storing the decision somewhere, which is option 2 under another name.
+2. **Resource:** each suspected pair is a row in `duplicate_candidates` with a status. The decision is data other parts of the system (ingestion) read later.
+
+**Decision (System Design Week 5, Day 1):** option 2 — model each suspected pair as a resource (`duplicate_candidates`), not a `/merge` action.
+- Table: `duplicate_candidates` (id, business_a_id, business_b_id, score, source, status, survivor_id, reviewed_by, reviewed_at, created_at). `status`: `pending` | `approved` | `rejected`. `source`: `ingestion` | `manual` (who flagged it).
+- `GET /duplicate-candidates?status=pending` — loads the queue.
+- `POST /duplicate-candidates` `{ business_a_id, business_b_id }` — rep manually flags two existing businesses as a possible duplicate (`source = 'manual'`).
+- `PATCH /duplicate-candidates/:id` — records the decision: `{ status: "rejected" }` or `{ status: "approved", survivor_id }`. Same endpoint for both outcomes; the body decides.
+- On approve: loser's `activity_log` and `source_records` move to the survivor, survivor's empty fields are filled from the loser, loser is soft-deleted.
+- On reject: both businesses untouched; the stored `rejected` row stops ingestion from re-flagging the pair.
+- Ingestion: uncertain-tier matches insert a `pending` candidate (`source = 'ingestion'`); skip any pair that already has a candidate row.
+- UI: two records side by side, radio select for the survivor (default = the record with a `license_number`), selected card highlighted, preview text above Merge ("X will be archived. Its N notes move to Y.").
+- Detection v1 = ingestion + manual flagging. Manual flagging chosen over an automated sweep: higher precision (a human already suspects a match), and at current scale a rep will notice duplicates. Trade-off: lower recall — only catches what someone sees.
+- Nothing merges automatically. Every merge requires a reviewer clicking Merge; every detection path (ingestion, manual, future sweep) only creates a `pending` suggestion.
+
+**Dependencies (must land first or alongside):**
+- **Soft delete is not built.** `DELETE /businesses/:id` currently hard-deletes and no `deleted_at` column exists. Approve depends on it.
+- **Ingestion must ignore archived rows.** `find_matching_business` and `find_matching_business_by_proximity` need `AND deleted_at IS NULL`, or the next run can match the archived loser instead of the survivor.
+- **Conflict with the `UNIQUE` license constraint entry.** If the loser has the license and the survivor doesn't, copying it to the survivor duplicates a value the soft-deleted loser still holds. Options: clear it on the loser during merge, or make the constraint a partial unique index (`WHERE deleted_at IS NULL`).
+- **Tier thresholds** (see fuzzy-match entry) decide what ingestion sends here vs. auto-links. Not yet decided.
+
+**Open questions:**
+- Store each pair in a consistent order (e.g. smaller id as `business_a_id`) plus a `UNIQUE (business_a_id, business_b_id)` constraint, so 42/57 and 57/42 can't become two candidates.
+- `reviewed_by` stays `NULL` until auth exists (same as `activity_log.user_id`).
+- Should a rejected pair ever be re-flagged (e.g. if either business's name or address changes later)?
+
+**Parked:** automated sweep comparing existing businesses against each other with looser rules (e.g. high name similarity + same city, ignoring distance), inserting `pending` candidates with `source = 'sweep'`.
+- Why parked: looser rules mean more false positives (e.g. two different "Green Leaf" stores in the same city). A false positive never merges on its own — it's just a `pending` card a reviewer can reject. The real risk is **reviewer fatigue**: a queue full of bad suggestions trains reviewers to click through without looking closely, and that is when a wrong merge actually happens. That would undercut this file's "prefer false negatives over false positives" principle.
+- At current scale (small business count, one reviewer), manual flagging covers the gap the sweep would fill.
+- Revisit once the business count is large enough that reps can't reasonably spot duplicates by eye. When built, it likely runs as part of the scheduled pipeline (see "Ingestion: no scheduled/automatic pipeline runs") and should start with conservative rules to keep the queue trustworthy.
