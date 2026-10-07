@@ -182,7 +182,12 @@ Also bundled in: a null-`location` backfill sweep (see "manual leads are never g
 
 **Dependencies (must land together):**
 - **Breaking change.** The response changes from an array to an object. `useFilteredBusinesses` must read `json.data` and keep `json.pagination`; backend tests asserting an array must be updated.
-- **Filtering must move to the server first.** The hook currently filters in the browser (`data.filter(...)`), which only works when it has every row. With 25 rows per page, filters would only search the current page and `totalPages` would be wrong. Build together with server-side filtering (Week 5, Day 3).
+- **Filtering must move to the server first.** The hook currently filters in the browser (`data.filter(...)`), and the filter values never reach the server — the request only says which page. Today that works because the server sends every row. With pagination, the server would cut the first 25 of *all* businesses, and the browser could only filter those 25. Matching rows further down the list stay in the database until the rep clicks to that page, so results come back **fragmented**:
+  - Uneven pages (e.g. 2 matches, then 0, then 5) and empty pages to click through.
+  - `totalPages` counts all businesses, not the filtered ones ("Page 1 of 32" for 3 results).
+  - A rep who stops at page 1 assumes that's every match.
+
+  Pages aren't stored anywhere — each request computes "filter → sort → slice" on the spot. Fix: send the filters in the request (`?stage=Customer&page=1`) so the SQL `WHERE` narrows the list *before* `LIMIT`/`OFFSET` slices it, and the `COUNT(*)` uses the same `WHERE`. Build together with server-side filtering (Week 5, Day 3).
 - **Map View needs a different strategy.** It uses the same hook but needs every pin in view, not 25 alphabetical rows. Not yet decided.
 
 **Decision:** designed, not built — waiting on server-side filtering.
