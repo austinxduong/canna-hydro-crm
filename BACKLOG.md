@@ -166,3 +166,23 @@ Also bundled in: a null-`location` backfill sweep (see "manual leads are never g
 - Why parked: looser rules mean more false positives (e.g. two different "Green Leaf" stores in the same city). A false positive never merges on its own — it's just a `pending` card a reviewer can reject. The real risk is **reviewer fatigue**: a queue full of bad suggestions trains reviewers to click through without looking closely, and that is when a wrong merge actually happens. That would undercut this file's "prefer false negatives over false positives" principle.
 - At current scale (small business count, one reviewer), manual flagging covers the gap the sweep would fill.
 - Revisit once the business count is large enough that reps can't reasonably spot duplicates by eye. When built, it likely runs as part of the scheduled pipeline (see "Ingestion: no scheduled/automatic pipeline runs") and should start with conservative rules to keep the queue trustworthy.
+
+## Backend + Frontend: paginate `GET /businesses`
+
+**Where:** `backend/app.ts` — `GET /businesses`; `frontend/src/hooks/useFilteredBusinesses.ts` (used by `BusinessList.tsx` and `MapView.tsx`); backend tests for `GET /businesses`.
+
+**What's happening:** `GET /businesses` returns every row with no limit, and the frontend renders all of them. Fine with seeded data; with full Oregon + Washington ingestion (thousands of rows) the payload and the React render of every row will make the List View slow or unresponsive.
+
+**Decision (System Design Week 5, Day 2):** offset pagination.
+- `?page=N` query param, page size 25. Guard bad input: `Math.max(1, parseInt(page) || 1)`.
+- `LIMIT $1 OFFSET $2` with `offset = (page - 1) * limit`.
+- `ORDER BY name ASC, id ASC` — pagination needs a deterministic order; `id` is the unique tiebreaker so rows with the same name can't shuffle between pages.
+- Total via `SELECT COUNT(*)::int` (cast, since node-postgres returns bigint as a string); `totalPages = Math.ceil(totalRows / limit)`.
+- Response wrapped as `{ data: [...], pagination: { page, limit, totalRows, totalPages } }` rather than array + headers: everything in the body, no CORS header exposure, and one shape every list endpoint can share.
+
+**Dependencies (must land together):**
+- **Breaking change.** The response changes from an array to an object. `useFilteredBusinesses` must read `json.data` and keep `json.pagination`; backend tests asserting an array must be updated.
+- **Filtering must move to the server first.** The hook currently filters in the browser (`data.filter(...)`), which only works when it has every row. With 25 rows per page, filters would only search the current page and `totalPages` would be wrong. Build together with server-side filtering (Week 5, Day 3).
+- **Map View needs a different strategy.** It uses the same hook but needs every pin in view, not 25 alphabetical rows. Not yet decided.
+
+**Decision:** designed, not built — waiting on server-side filtering.
